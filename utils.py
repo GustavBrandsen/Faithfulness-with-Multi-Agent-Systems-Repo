@@ -4,7 +4,11 @@ from pydantic import BaseModel, Field
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import torch
 import time
+from dotenv import load_dotenv
 from huggingface_hub import login
+load_dotenv()
+
+login(token = os.getenv("HUGGINGFACE_LOGIN"))
 
 print("cuda available:", torch.cuda.is_available())
 print("cuda version:", torch.version.cuda)
