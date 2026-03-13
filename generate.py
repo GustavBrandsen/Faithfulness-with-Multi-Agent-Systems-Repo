@@ -11,13 +11,14 @@ import numpy as np
 from typing import List
 from tqdm import tqdm
 from datasets import load_dataset
+import time
 
 from utils import json_chat, replace_prompt, VoteResponse, normal_chat
 
 _TRANSCRIPT_SESSION_STAMP = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
 
 CONFIG = {
-    "num_tasks": 20,
+    "num_tasks": 1000,
     "dataset": "openai/gsm8k",   # HuggingFace dataset name
     "dataset_config": "main",
     "dataset_split": "test",     # "train" or "test"
@@ -26,9 +27,9 @@ CONFIG = {
     # "dataset_config": "all",
     # "dataset_split": "test",
     "num_agents": 3,
-    "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct",
-    "num_rounds": 15,
-    "num_duplications": 10,
+    "model_for_simulation": "meta-llama/Llama-3.2-3B-Instruct",
+    "num_rounds": 5,
+    "num_duplications": 1,
     "extra": "",
     "percentage_special_agents": 1.0,
     "save_transcripts": True,
@@ -201,16 +202,19 @@ def run_full_scenario(task, prompts):
 
 
 def run_full_scenario_with_logging(task, prompts):
-    """Same as run_full_scenario but records all discussion rounds for transcript output."""
+    """Run one simulation and record all rounds + compute accuracies."""
     num_rounds = CONFIG["num_rounds"]
     extra_prompt = CONFIG["extra"]
+    correct_answer = task["correct_answer"]
 
     run_data = {"scenario": task["name"], "initial_votes": [], "discussion_rounds": [], "final_votes": []}
     agents = _create_agents(task, prompts)
 
     for agent in agents:
         response = agent.vote(prompts["first_vote_prompt"])
-        run_data["initial_votes"].append({"agent": agent.name, "vote": response["vote"], "rationale": response["rationale"]})
+        run_data["initial_votes"].append(
+            {"agent": agent.name, "vote": response["vote"], "rationale": response["rationale"]}
+        )
 
     for round_num in range(num_rounds):
         round_msgs = []
@@ -249,23 +253,31 @@ def run_full_scenario_with_logging(task, prompts):
     for agent in agents:
         vote_prompt = replace_prompt(prompts["vote"], {"group_discussion": group_discussion})
         response = agent.vote(vote_prompt)
-        run_data["final_votes"].append({"agent": agent.name, "vote": response["vote"], "rationale": response["rationale"]})
+        run_data["final_votes"].append(
+            {"agent": agent.name, "vote": response["vote"], "rationale": response["rationale"]}
+        )
 
+    initial_acc = sum(1 for v in run_data["initial_votes"] if answers_match(v["vote"], correct_answer)) / len(run_data["initial_votes"])
+    final_acc = sum(1 for v in run_data["final_votes"] if answers_match(v["vote"], correct_answer)) / len(run_data["final_votes"])
+    run_data["initial_acc"] = initial_acc
+    run_data["final_acc"] = final_acc
     return run_data
 
 
 def run_full_evaluation(task, prompts):
-    """Run num_duplications parallel simulations for one task and aggregate accuracy."""
+    """Run num_duplications simulations for one task and aggregate accuracy. Returns (result, run_data_list)."""
     print(f"\nEvaluating: {task['name']}")
     before_accs, after_accs = [], []
+    run_data_list = []
 
     with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(run_full_scenario, task, prompts) for _ in range(CONFIG["num_duplications"])]
+        futures = [executor.submit(run_full_scenario_with_logging, task, prompts) for _ in range(CONFIG["num_duplications"])]
         for future in tqdm(as_completed(futures), total=CONFIG["num_duplications"], desc=task['name']):
             try:
-                before, after = future.result()
-                before_accs.append(before)
-                after_accs.append(after)
+                run_data = future.result()
+                run_data_list.append(run_data)
+                before_accs.append(run_data["initial_acc"])
+                after_accs.append(run_data["final_acc"])
             except Exception as e:
                 print(f"Error: {e}")
                 traceback.print_exc()
@@ -282,7 +294,7 @@ def run_full_evaluation(task, prompts):
     print(f"  Before={result['before_mean']:.3f}±{result['before_std']:.3f}, "
           f"After={result['after_mean']:.3f}±{result['after_std']:.3f}, "
           f"Change={result['change']:+.3f}")
-    return result
+    return result, run_data_list
 
 
 def _format_transcript(task: dict, runs: list) -> str:
@@ -375,8 +387,25 @@ def print_summary(tasks, eval_results):
         print(f"{'AVERAGE':<35} {avg_b:.3f}         {avg_a:.3f}         {avg_a - avg_b:+.3f}")
     print("=" * 80)
 
+def save_session_summary(total_seconds: float, results_file: str) -> str:
+    transcripts_dir = _resolve_transcripts_dir()
+    os.makedirs(transcripts_dir, exist_ok=True)
+    out_path = os.path.join(transcripts_dir, "summary.txt")
+    with open(out_path, "w") as f:
+        f.write(f"Model: {CONFIG.get('model_for_simulation', '')}" + "\n")
+        f.write(f"Dataset: {CONFIG.get('dataset', '')}" + "\n")
+        f.write(f"Tasks: {CONFIG['num_tasks']}  |  Agents: {CONFIG['num_agents']}  |  Rounds: {CONFIG['num_rounds']}  |  Duplications: {CONFIG['num_duplications']}" + "\n")
+        f.write(f"Total time: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds))}" + "\n")
+    return out_path
 
 def main():
+    args = sys.argv[1:]
+    if len(args) >= 1:
+        CONFIG["num_tasks"] = int(args[0])
+    if len(args) >= 2:
+        CONFIG["model_for_simulation"] = args[1].strip().strip('"').strip("'")
+
+    start_time = time.time()
     print("Starting Multi-Agent Evaluation")
     prompts = load_prompts()
     tasks = load_tasks(CONFIG["num_tasks"], CONFIG["dataset"], CONFIG["dataset_config"], CONFIG["dataset_split"])
@@ -384,11 +413,11 @@ def main():
     eval_results = []
     for task_number, task in enumerate(tasks, start=1):
         print(f"\n{'=' * 60}\nTask {task_number}/{len(tasks)}: {task['name']}")
-        eval_results.append(run_full_evaluation(task, prompts))
+        eval_result, run_data_list = run_full_evaluation(task, prompts)
+        eval_results.append(eval_result)
 
-        if CONFIG.get("save_transcripts"):
-            run_data = run_full_scenario_with_logging(task, prompts)
-            transcript_path = _save_task_transcript(task, [run_data])
+        if CONFIG.get("save_transcripts") and run_data_list:
+            transcript_path = _save_task_transcript(task, [run_data_list[0]])
             print(f"  Transcript → {transcript_path}")
 
         checkpoint = save_results_incremental(tasks, eval_results, task_number)
@@ -398,6 +427,10 @@ def main():
     print_summary(tasks, eval_results)
     print(f"\nResults → {results_file}")
 
+    total_seconds = time.time() - start_time
+    if CONFIG.get("save_transcripts"):
+        summary_path = save_session_summary(total_seconds, results_file)
+        print(f"Session summary → {summary_path}")
 
 if __name__ == "__main__":
     main()
