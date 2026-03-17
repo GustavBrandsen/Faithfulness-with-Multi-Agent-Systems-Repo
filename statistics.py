@@ -113,3 +113,5 @@ def statistics(tasks_answers, model_name, num_agents=3):
 qwen_stats = statistics(qwen_tasks_answers, "Qwen2.5-3B-Instruct")
 llama_stats = statistics(llama_tasks_answers, "Llama-3.2-3B-Instruct")
 olmo_stats = statistics(olmo_tasks_answers, "OLMo-2-0425-1B-Instruct")
+
+print("Tests for push in github")
