@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import os
 
 def extract_answers(file_path, num_agents):
-    answer_regex = r"(?<=answered: )(\w+)"
-    correct_answer_regex = r"(?<=Correct Answer: )(\w+)"
+    answer_regex = r"(?<=answered: )(.+)"
+    correct_answer_regex = r"(?<=Correct Answer: )(.+)"
 
     tasks = dict()
     task_files = [f for f in os.listdir(file_path) if "task" in f and f.endswith(".txt")]
 
-    for idx, filename in enumerate(sorted(task_files), 1):
+    for idx, filename in enumerate(sorted(task_files), 1): 
         # Read the entire file as a string
         with open(os.path.join(file_path, filename), 'r') as file:
             text = file.read()
@@ -72,6 +72,7 @@ def statistics(tasks_answers, model_name, num_agents=3):
                 missed_patterns_dict[task_num] = (init_answer, final_answer, correct_answer)
 
     print(missed_patterns, "tasks did not fit any of the defined patterns.")
+    print("Number of Tasks: ", num_tasks)
 
     # Create a bar chart
     categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct',]
@@ -94,7 +95,11 @@ def statistics(tasks_answers, model_name, num_agents=3):
                 ha='center', va='bottom', fontsize=8, fontweight='bold')
         
     plt.tight_layout()  # Adjust spacing so labels don't get cut off
-    plt.savefig(model_name + '_statistics.png')
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_folder = os.path.join(script_dir, 'statistic_images')
+    filepath = os.path.join(output_folder, model_name + '_statistics.png')
+    plt.savefig(filepath)
     print("Plot saved as " + model_name + "_statistics.png")
     plt.clf()
 
