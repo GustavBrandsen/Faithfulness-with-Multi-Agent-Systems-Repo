@@ -40,7 +40,16 @@ CONFIG = {
 def _resolve_transcripts_dir() -> str:
     base = CONFIG["transcripts_dir"]
     resolved_base = base if os.path.isabs(base) else os.path.join(os.path.dirname(os.path.abspath(__file__)), base)
-    return os.path.join(resolved_base, _TRANSCRIPT_SESSION_STAMP)
+    model_name = None
+    match CONFIG["model_for_simulation"]:
+        case "meta-llama/Llama-3.2-3B-Instruct":
+            model_name = "llama"
+        case "Qwen/Qwen2.5-3B-Instruct":
+            model_name = "qwen"
+        case "allenai/OLMo-2-0425-1B-Instruct":
+            model_name = "olmo"
+    folder_name = model_name + "_" + _TRANSCRIPT_SESSION_STAMP
+    return os.path.join(resolved_base, folder_name)
 
 
 def _extract_number(text: str):
@@ -395,6 +404,7 @@ def save_session_summary(total_seconds: float, results_file: str) -> str:
         f.write(f"Model: {CONFIG.get('model_for_simulation', '')}" + "\n")
         f.write(f"Dataset: {CONFIG.get('dataset', '')}" + "\n")
         f.write(f"Tasks: {CONFIG['num_tasks']}  |  Agents: {CONFIG['num_agents']}  |  Rounds: {CONFIG['num_rounds']}  |  Duplications: {CONFIG['num_duplications']}" + "\n")
+        f.write(f"Avg time per task: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds / CONFIG['num_tasks']))}" + "\n")
         f.write(f"Total time: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds))}" + "\n")
     return out_path
 

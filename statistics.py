@@ -1,15 +1,17 @@
 import re
 import matplotlib.pyplot as plt
+import os
 
-def extract_answers(file_path, num_tasks, num_agents):
+def extract_answers(file_path, num_agents):
     answer_regex = r"(?<=answered: )(\w+)"
     correct_answer_regex = r"(?<=Correct Answer: )(\w+)"
 
     tasks = dict()
+    task_files = [f for f in os.listdir(file_path) if "task" in f and f.endswith(".txt")]
 
-    for i in range(1, num_tasks + 1):
+    for idx, filename in enumerate(sorted(task_files), 1):
         # Read the entire file as a string
-        with open(file_path + '/task' + str(i) + '.txt', 'r') as file:
+        with open(os.path.join(file_path, filename), 'r') as file:
             text = file.read()
 
         result = re.findall(answer_regex, text)
@@ -17,11 +19,11 @@ def extract_answers(file_path, num_tasks, num_agents):
         final_answer = result[num_agents:]
         correct_answer = re.findall(correct_answer_regex, text)
 
-        tasks[i] = (init_answer, final_answer, correct_answer)
+        tasks[idx] = (init_answer, final_answer, correct_answer)
         
     return tasks
 
-tasks_answers = extract_answers('/home/xng137/SPECIALE/HiddenBench_newest/transcripts/2026-03-08_17h59m42s', 15, 3)
+tasks_answers = extract_answers('./transcripts/qwen_2026-03-13_03h18m13s', 3)
 
 # print(tasks_answers)
 # print(tasks_answers[1][0])
