@@ -3,7 +3,6 @@ import json, os, time
 from pydantic import BaseModel, Field
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import torch
-import time
 from dotenv import load_dotenv
 from huggingface_hub import login
 load_dotenv()
@@ -17,90 +16,49 @@ print("device:", torch.cuda.get_device_name(0))
 POSSIBLE_MODELS = [
     'Qwen/Qwen2.5-3B-Instruct',
     'meta-llama/Llama-3.2-3B-Instruct',
-    'allenai/OLMo-2-0425-1B-Instruct'
+    'allenai/Olmo-3-7B-Instruct'
 ]
 
-qwen_model_name = "Qwen/Qwen2.5-3B-Instruct"
-qwen_tokenizer = AutoTokenizer.from_pretrained(qwen_model_name, trust_remote_code=True)
-qwen_model = AutoModelForCausalLM.from_pretrained(
-    qwen_model_name,
-    dtype=torch.float16,
-    device_map="cuda",
-    trust_remote_code=True
-)
-qwen_pipe = pipeline("text-generation", model=qwen_model, tokenizer=qwen_tokenizer)
-_ = qwen_pipe("Warmup.", max_new_tokens=1)
+# Declare our module-level variables
+tokenizer = None
+model = None
+pipe = None
 
-def qwen_generate_text(prompt: str) -> str:
-    inputs = qwen_tokenizer(prompt, return_tensors="pt").to(qwen_model.device)
+def init_model(model_name: str):
+    global tokenizer, model, pipe
+    
+    if model_name not in POSSIBLE_MODELS:
+        raise ValueError(f"Model {model_name} not supported")
+        
+    print(f"Loading {model_name} into memory...")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        dtype=torch.float16,
+        device_map="cuda",
+        trust_remote_code=True
+    )
+    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+    _ = pipe("Warmup.", max_new_tokens=1)
+
+
+def generate_text(prompt: str, model_name: str) -> str:
+    # Use the global model and tokenizer directly
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     input_len = inputs["input_ids"].shape[-1]
 
     with torch.inference_mode():
-        out = qwen_model.generate(
+        out = model.generate(
             **inputs,
             max_new_tokens=512*4,
             do_sample=False,
-            pad_token_id=qwen_tokenizer.eos_token_id,
+            pad_token_id=tokenizer.eos_token_id,
         )
 
     # Decode ONLY the generated continuation (not the prompt)
     gen_ids = out[0][input_len:]
-    return qwen_tokenizer.decode(gen_ids, skip_special_tokens=True)
+    return tokenizer.decode(gen_ids, skip_special_tokens=True)
 
-
-llama_model_name = "meta-llama/Llama-3.2-3B-Instruct"
-llama_tokenizer = AutoTokenizer.from_pretrained(llama_model_name, trust_remote_code=True)
-llama_model = AutoModelForCausalLM.from_pretrained(
-    llama_model_name,
-    dtype=torch.float16,
-    device_map="cuda",
-    trust_remote_code=True
-)
-llama_pipe = pipeline("text-generation", model=llama_model, tokenizer=llama_tokenizer)
-_ = llama_pipe("Warmup.", max_new_tokens=1)
-
-def llama_generate_text(prompt: str) -> str:
-    inputs = llama_tokenizer(prompt, return_tensors="pt").to(llama_model.device)
-    input_len = inputs["input_ids"].shape[-1]
-
-    with torch.inference_mode():
-        out = llama_model.generate(
-            **inputs,
-            max_new_tokens=512*4,
-            do_sample=False,
-            pad_token_id=llama_tokenizer.eos_token_id,
-        )
-
-    # Decode ONLY the generated continuation (not the prompt)
-    gen_ids = out[0][input_len:]
-    return llama_tokenizer.decode(gen_ids, skip_special_tokens=True)
-
-olmo_model_name = "allenai/OLMo-2-0425-1B-Instruct"
-olmo_tokenizer = AutoTokenizer.from_pretrained(olmo_model_name, trust_remote_code=True)
-olmo_model = AutoModelForCausalLM.from_pretrained(
-    olmo_model_name,
-    dtype=torch.float16,
-    device_map="cuda",
-    trust_remote_code=True
-)
-olmo_pipe = pipeline("text-generation", model=olmo_model, tokenizer=olmo_tokenizer)
-_ = olmo_pipe("Warmup.", max_new_tokens=1)
-
-def olmo_generate_text(prompt: str) -> str:
-    inputs = olmo_tokenizer(prompt, return_tensors="pt").to(olmo_model.device)
-    input_len = inputs["input_ids"].shape[-1]
-
-    with torch.inference_mode():
-        out = olmo_model.generate(
-            **inputs,
-            max_new_tokens=512*4,
-            do_sample=False,
-            pad_token_id=olmo_tokenizer.eos_token_id,
-        )
-
-    # Decode ONLY the generated continuation (not the prompt)
-    gen_ids = out[0][input_len:]
-    return olmo_tokenizer.decode(gen_ids, skip_special_tokens=True)
 
 def replace_prompt(raw_prompt: str, information: Dict[str, str]) -> str:
     for key, value in information.items():
@@ -110,7 +68,7 @@ def replace_prompt(raw_prompt: str, information: Dict[str, str]) -> str:
 
 def json_chat(messages: List[Dict[str, str]],
               response_format,
-              model: str) -> str:
+              model_name: str) -> str:
     def extract_json(input_string):
         input_string = input_string.replace("\n", "")
         stack = []
@@ -131,142 +89,56 @@ def json_chat(messages: List[Dict[str, str]],
                     return input_string[json_start_positions.pop():pos+1]
         return None
     
-    def hugging_face_qwen_json_chat(max_retries=5):
+    def hugging_face_json_chat(max_retries=5):
         for attempt in range(max_retries):
             try:
-                prompt = qwen_tokenizer.apply_chat_template(
+                # Use the global tokenizer
+                prompt = tokenizer.apply_chat_template(
                     messages,
                     tokenize=False,
                     add_generation_prompt=True,
                 )
-                result = qwen_generate_text(prompt)
+                result = generate_text(prompt, model_name)
 
                 json_content = extract_json(result)
                 if not json_content:
                     raise ValueError("No JSON content found")
                 
-
                 return json.loads(json_content)
 
             except Exception as e:
-                print(f"Attempt {attempt+1}/{max_retries} failed: {e}")
-                time.sleep(1)
-
-        raise RuntimeError("Model failed to produce valid JSON after retries")
-    
-    def hugging_face_llama_json_chat(max_retries=5):
-        for attempt in range(max_retries):
-            try:
-                prompt = llama_tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
-                )
-                result = llama_generate_text(prompt)
-
-                json_content = extract_json(result)
-                if not json_content:
-                    raise ValueError("No JSON content found")
-                
-
-                return json.loads(json_content)
-
-            except Exception as e:
-                print(f"Attempt {attempt+1}/{max_retries} failed: {e}")
-                time.sleep(1)
-
-        raise RuntimeError("Model failed to produce valid JSON after retries")
-    
-    def hugging_face_olmo_json_chat(max_retries=5):
-        for attempt in range(max_retries):
-            try:
-                prompt = olmo_tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
-                )
-                result = olmo_generate_text(prompt)
-
-                json_content = extract_json(result)
-                if not json_content:
-                    raise ValueError("No JSON content found")
-                
-
-                return json.loads(json_content)
-
-            except Exception as e:
-                print(f"Attempt {attempt+1}/{max_retries} failed: {e}")
+                print(f"Attempt {attempt+1}/{max_retries} failed on {model_name}: {e}")
                 time.sleep(1)
 
         raise RuntimeError("Model failed to produce valid JSON after retries")
 
-    if model in POSSIBLE_MODELS:
-        if model == 'Qwen/Qwen2.5-3B-Instruct':
-            return hugging_face_qwen_json_chat()
-        elif model == 'meta-llama/Llama-3.2-3B-Instruct':
-            return hugging_face_llama_json_chat()
-        elif model == 'allenai/OLMo-2-0425-1B-Instruct':
-            return hugging_face_olmo_json_chat()
+    if model_name in POSSIBLE_MODELS:
+        return hugging_face_json_chat()
     else:
-        raise ValueError(f"Model {model} not supported")
+        raise ValueError(f"Model {model_name} not supported")
 
 
-def normal_chat(messages: List[Dict[str, str]], model: str) -> str:
-    def hugging_face_qwen_normal_chat():
+def normal_chat(messages: List[Dict[str, str]], model_name: str) -> str:
+    def hugging_face_normal_chat():
         while True:
             try:
-                prompt = qwen_tokenizer.apply_chat_template(
+                # Use the global tokenizer and pipe
+                prompt = tokenizer.apply_chat_template(
                     messages,
                     tokenize=False,
                     add_generation_prompt=True,
                 )
 
-                response = qwen_pipe(prompt, max_new_tokens=512, do_sample=False, return_full_text=False)
+                response = pipe(prompt, max_new_tokens=512, do_sample=False, return_full_text=False)
                 return response[0]["generated_text"]
             except Exception as e:
-                print(f"Error in hugging_face_qwen_normal_chat: {e}")
-                continue
-            
-    def hugging_face_llama_normal_chat():
-        while True:
-            try:
-                prompt = llama_tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
-                )
-
-                response = llama_pipe(prompt, max_new_tokens=512, do_sample=False, return_full_text=False)
-                return response[0]["generated_text"]
-            except Exception as e:
-                print(f"Error in hugging_face_llama_normal_chat: {e}")
-                continue
-
-    def hugging_face_olmo_normal_chat():
-        while True:
-            try:
-                prompt = olmo_tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
-                )
-
-                response = olmo_pipe(prompt, max_new_tokens=512, do_sample=False, return_full_text=False)
-                return response[0]["generated_text"]
-            except Exception as e:
-                print(f"Error in hugging_face_olmo_normal_chat: {e}")
+                print(f"Error in hugging_face_normal_chat for {model_name}: {e}")
                 continue
     
-    if model in POSSIBLE_MODELS:
-        if model == 'Qwen/Qwen2.5-3B-Instruct':
-            return hugging_face_qwen_normal_chat()
-        elif model == 'meta-llama/Llama-3.2-3B-Instruct':
-            return hugging_face_llama_normal_chat()
-        elif model == 'allenai/OLMo-2-0425-1B-Instruct':
-            return hugging_face_olmo_normal_chat()
+    if model_name in POSSIBLE_MODELS:
+        return hugging_face_normal_chat()
     else:
-        raise ValueError(f"Model {model} not supported")
-
+        raise ValueError(f"Model {model_name} not supported")
 
 class VoteResponse(BaseModel):
     vote: str

@@ -13,12 +13,12 @@ from tqdm import tqdm
 from datasets import load_dataset
 import time
 
-from utils import json_chat, replace_prompt, VoteResponse, normal_chat
+from utils import json_chat, replace_prompt, VoteResponse, normal_chat, init_model
 
 _TRANSCRIPT_SESSION_STAMP = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
 
 CONFIG = {
-    "num_tasks": 1000,
+    "num_tasks": 1,
     "dataset": "openai/gsm8k",   # HuggingFace dataset name
     "dataset_config": "main",
     "dataset_split": "test",     # "train" or "test"
@@ -27,7 +27,7 @@ CONFIG = {
     # "dataset_config": "all",
     # "dataset_split": "test",
     "num_agents": 3,
-    "model_for_simulation": "meta-llama/Llama-3.2-3B-Instruct",
+    "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct",
     "num_rounds": 5,
     "num_duplications": 1,
     "extra": "",
@@ -43,11 +43,13 @@ def _resolve_transcripts_dir() -> str:
     model_name = None
     match CONFIG["model_for_simulation"]:
         case "meta-llama/Llama-3.2-3B-Instruct":
-            model_name = "llama"
+            model_name = "llama3b"
         case "Qwen/Qwen2.5-3B-Instruct":
-            model_name = "qwen"
+            model_name = "qwen3b"
         case "allenai/OLMo-2-0425-1B-Instruct":
-            model_name = "olmo"
+            model_name = "olmo1b"
+        case "allenai/Olmo-3-7B-Instruct":
+            model_name = "olmo7b"
     folder_name = model_name + "_" + _TRANSCRIPT_SESSION_STAMP
     return os.path.join(resolved_base, folder_name)
 
@@ -110,14 +112,14 @@ class Agent:
 
     def chat(self, message):
         self.history.append({"role": "user", "content": message})
-        response = normal_chat(self.history, model=self.model)
+        response = normal_chat(self.history, model_name=self.model)
         self.history.append({"role": "assistant", "content": str(response)})
         return response
 
     def vote(self, message):
         local_history = self.history.copy()
         local_history.append({"role": "user", "content": message})
-        return json_chat(local_history, VoteResponse, model=self.model)
+        return json_chat(local_history, VoteResponse, model_name=self.model)
 
 
 def load_prompts(prompt_dir=None):
@@ -417,6 +419,7 @@ def main():
 
     start_time = time.time()
     print("Starting Multi-Agent Evaluation")
+    init_model(CONFIG["model_for_simulation"])
     prompts = load_prompts()
     tasks = load_tasks(CONFIG["num_tasks"], CONFIG["dataset"], CONFIG["dataset_config"], CONFIG["dataset_split"])
 

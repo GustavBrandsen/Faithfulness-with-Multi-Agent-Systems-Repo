@@ -55,14 +55,14 @@ class Agent:
 
     def chat(self, message):
         self.history.append({"role": "user", "content": message})
-        response = normal_chat(self.history, model=self.model)
+        response = normal_chat(self.history, model_name=self.model)
         self.history.append({"role": "assistant", "content": str(response)})
         return response
     
     def vote(self, message, possible_answers):
         local_history = self.history.copy()
         local_history.append({"role": "user", "content": message})
-        response = json_chat(local_history, VoteResponse, model=self.model)
+        response = json_chat(local_history, VoteResponse, model_name=self.model)
         
         return response
 
