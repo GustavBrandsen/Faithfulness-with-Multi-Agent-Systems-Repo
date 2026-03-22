@@ -34,6 +34,7 @@ CONFIG = {
     "percentage_special_agents": 1.0,
     "save_transcripts": True,
     "transcripts_dir": "transcripts",
+    "share_mode": "both", # "both", "reasoning", or "answer"
 }
 
 
@@ -156,6 +157,25 @@ def _create_agents(task, prompts):
         agents.append(Agent(f"Person {i+1}", agent_prompt, model, is_special=(i in special_indices)))
     return agents
 
+def format_shared_content(content):
+    """Filters the bot's response based on the 'share_mode' config."""
+    share_mode = CONFIG.get("share_mode", "").lower()
+    if share_mode == "both":
+        return content
+        
+    parts = content.split("The answer is:")
+    # parts = re.split(r'(?i)the answer is\s*:?', content)
+    reasoning = parts[0].strip()
+    
+    # Check if there is an answer part after the split
+    answer = parts[1].strip() if len(parts) > 1 else ""
+    
+    if share_mode == "reasoning":
+        return reasoning
+    elif share_mode == "answer":
+        return f"The answer is: {answer}"
+        
+    return content  # fallback
 
 def run_full_scenario(task, prompts):
     """Run one simulation (initial votes → discussion → final votes) for a task."""
@@ -185,13 +205,13 @@ def run_full_scenario(task, prompts):
                         "extra": extra_prompt if agent.is_special else "",
                     })
                 response = agent.chat(prompt)
-                prev_messages.append(f"{agent.name}: {response}")
+                prev_messages.append(f"{agent.name}: {format_shared_content(response)}")
         else:
             for agent in agents:
                 current_idx = agents.index(agent)
                 others = [
                     f"{agents[(current_idx + i) % len(agents)].name}: "
-                    f"{agents[(current_idx + i) % len(agents)].history[-1]['content']}"
+                    f"{format_shared_content(agents[(current_idx + i) % len(agents)].history[-1]['content'])}"
                     for i in range(1, len(agents))
                 ]
                 prompt = replace_prompt(prompts["user_prompt"], {
@@ -200,7 +220,7 @@ def run_full_scenario(task, prompts):
                 })
                 agent.chat(prompt)
 
-    group_discussion = "\n".join(f"{a.name}: {a.history[-1]['content']}" for a in agents)
+    group_discussion = "\n".join(f"{a.name}: {format_shared_content(a.history[-1]['content'])}" for a in agents)
     final_votes = []
     for agent in agents:
         vote_prompt = replace_prompt(prompts["vote"], {"group_discussion": group_discussion})
@@ -242,14 +262,14 @@ def run_full_scenario_with_logging(task, prompts):
                         "extra": extra_prompt if agent.is_special else "",
                     })
                 response = str(agent.chat(prompt))
-                prev_messages.append(f"{agent.name}: {response}")
+                prev_messages.append(f"{agent.name}: {format_shared_content(response)}")
                 round_msgs.append({"agent": agent.name, "message": response})
         else:
             for agent in agents:
                 current_idx = agents.index(agent)
                 others = [
                     f"{agents[(current_idx + i) % len(agents)].name}: "
-                    f"{agents[(current_idx + i) % len(agents)].history[-1]['content']}"
+                    f"{format_shared_content(agents[(current_idx + i) % len(agents)].history[-1]['content'])}"
                     for i in range(1, len(agents))
                 ]
                 prompt = replace_prompt(prompts["user_prompt"], {
@@ -260,7 +280,7 @@ def run_full_scenario_with_logging(task, prompts):
                 round_msgs.append({"agent": agent.name, "message": response})
         run_data["discussion_rounds"].append(round_msgs)
 
-    group_discussion = "\n".join(f"{a.name}: {a.history[-1]['content']}" for a in agents)
+    group_discussion = "\n".join(f"{a.name}: {format_shared_content(a.history[-1]['content'])}" for a in agents)
     for agent in agents:
         vote_prompt = replace_prompt(prompts["vote"], {"group_discussion": group_discussion})
         response = agent.vote(vote_prompt)
@@ -329,7 +349,9 @@ def _format_transcript(task: dict, runs: list) -> str:
         for r_idx, r_msgs in enumerate(run.get("discussion_rounds", []), start=1):
             lines.append(f"  Round {r_idx}:")
             for msg in r_msgs:
-                lines.append(f"    {msg['agent']}: {msg['message']}")
+                shared_msg = format_shared_content(msg['message'])
+                lines.append(f"    {msg['agent']}: {msg['message']}    [SHARED] {shared_msg}")
+                # lines.append(f"    [SHARED] {shared_msg}")
             lines.append("")
         lines.append("Final answers:")
         for v in run.get("final_votes", []):
@@ -408,6 +430,7 @@ def save_session_summary(total_seconds: float, results_file: str) -> str:
         f.write(f"Tasks: {CONFIG['num_tasks']}  |  Agents: {CONFIG['num_agents']}  |  Rounds: {CONFIG['num_rounds']}  |  Duplications: {CONFIG['num_duplications']}" + "\n")
         f.write(f"Avg time per task: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds / CONFIG['num_tasks']))}" + "\n")
         f.write(f"Total time: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds))}" + "\n")
+        f.write(f"Shared content mode: {CONFIG.get('share_mode', '')}" + "\n")
     return out_path
 
 def main():
