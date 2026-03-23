@@ -19,13 +19,13 @@ _TRANSCRIPT_SESSION_STAMP = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
 
 CONFIG = {
     "num_tasks": 1,
-    "dataset": "openai/gsm8k",   # HuggingFace dataset name
-    "dataset_config": "main",
-    "dataset_split": "test",     # "train" or "test"
+    # "dataset": "openai/gsm8k",   # HuggingFace dataset name
+    # "dataset_config": "main",
+    # "dataset_split": "test",     # "train" or "test"
     # change dataset to cais/mmlu
-    # "dataset": "cais/mmlu",
-    # "dataset_config": "all",
-    # "dataset_split": "test",
+    "dataset": "cais/mmlu",
+    "dataset_config": "all",
+    "dataset_split": "test",
     "num_agents": 3,
     "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct",
     "num_rounds": 5,

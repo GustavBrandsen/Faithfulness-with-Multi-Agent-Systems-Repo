@@ -7,17 +7,19 @@ def extract_answers(file_path, num_agents=3, num_rounds=5):
     answer_regex = r"(?<=answered: )(.+?)(?=(?:\.\s|\n|$))"
     correct_answer_regex = r"(?<=Correct Answer: )(.+)"
     round_answer_regex = r"(?<=The answer is: )(.+?)(?=(?:\.\s|\n|$))"
+    task_id_regex = r"(?<=Task ID: )(\d+)"
 
     answers = dict()
     round_answers = dict()
     task_files = [f for f in os.listdir(file_path) if "task" in f and f.endswith(".txt")]
 
-    for idx, filename in enumerate(sorted(task_files), 1): 
+    for _, filename in enumerate(sorted(task_files), 1): 
         rounds = dict()
         # Read the entire file as a string
         with open(os.path.join(file_path, filename), 'r') as file:
             text = file.read()
 
+        idx = re.findall(task_id_regex, text)[0]
         result = re.findall(answer_regex, text)
         init_answer = result[0:num_agents]
         final_answer = result[num_agents:]
@@ -38,7 +40,7 @@ def extract_answers(file_path, num_agents=3, num_rounds=5):
     return answers, round_answers
 
 
-def statistics(tasks_answers, model_name, num_agents=3):
+def statistics(tasks_answers, model_name, num_agents=3, system='MAS'):
     wrong_correct = 0
     wrong_different_wrong = 0
     wrong_same_wrong = 0
@@ -90,7 +92,7 @@ def statistics(tasks_answers, model_name, num_agents=3):
     bars = plt.bar(categories, percentages)
     plt.ylabel('Percentage (%) of Tasks')
     plt.xlabel('Answer Pattern')
-    plt.title(model_name + ': Answer Patterns Across ' + str(num_tasks) + ' Tasks')
+    plt.title(system + ' ' + model_name + ': Answer Patterns Across ' + str(num_tasks) + ' Tasks')
     plt.xticks(rotation=45, ha='right')  # Rotate labels 45 degrees
 
     # Add percentage labels on top of each bar
@@ -104,9 +106,9 @@ def statistics(tasks_answers, model_name, num_agents=3):
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     output_folder = os.path.join(script_dir, 'statistic_images')
-    filepath = os.path.join(output_folder, model_name + '_statistics.png')
+    filepath = os.path.join(output_folder, model_name + '_' + system + '_statistics.png')
     plt.savefig(filepath)
-    print("Plot saved as " + model_name + "_statistics.png")
+    print("Plot saved as " + model_name + '_' + system + "_statistics.png")
     plt.clf()
 
     return {
@@ -125,8 +127,9 @@ def statistics(tasks_answers, model_name, num_agents=3):
 # llama_stats = statistics(llama_tasks_answers, "Llama-3.2-3B-Instruct")
 # olmo_stats = statistics(olmo_tasks_answers, "OLMo-2-0425-1B-Instruct")
 
-def round_statistics(tasks_answers, model_name, num_agents=3, rounds=5):
+def round_statistics(tasks_answers, model_name, system="MAS", num_agents=3, rounds=5):
     wrong_correct = 0
+
     num_agents_converge_correct = dict()
     round_categories = []
     for round_num in range(1, rounds + 1):
@@ -134,49 +137,59 @@ def round_statistics(tasks_answers, model_name, num_agents=3, rounds=5):
         round_categories.append(f'Round {round_num}')
     num_agents_converge_correct[rounds + 1] = 0
     round_categories.append(f'Final Answer')
+    num_agents_converge_correct[rounds + 2] = 0
+    round_categories.append(f'Unknown\nConvergence\nRound')
+
     num_tasks = len(tasks_answers)
     missed_patterns = 0
     missed_patterns_dict = dict()
     is_converged = False
 
     for task_num, (init_answer, round_answers, correct_answer) in tasks_answers.items():
-        print(f"Task {task_num}:")
-        print(f"  Initial Answers: {init_answer}")
+        # print(f"Task {task_num}:")
+        # print(f"  Initial Answers: {init_answer}")
         final_answer = round_answers[rounds + 1]
 
         for agent_idx, agent_answer in enumerate(zip(init_answer, final_answer)): 
             init_wrong = agent_answer[0] != correct_answer[0]
             wrong_to_correct = correct_answer[0] == agent_answer[1]
-            is_converged = False  
+            is_converged = False 
 
             if init_wrong and wrong_to_correct:
                 wrong_correct += 1
 
                 for round_num, round_answer in round_answers.items():
-                    if agent_idx == 0:
-                        print(f"  Round {round_num}: {round_answer}")
+                    # if agent_idx == 0:
+                        # print(f"  Round {round_num}: {round_answer}")
                         
                     if len(round_answer) <= agent_idx:
                         correct_round_answer = False
                     else:
                         correct_round_answer = round_answer[agent_idx] == correct_answer[0]
-                   
-                    if correct_round_answer and not is_converged:
+
+                    if round_num == rounds and is_converged == False and not correct_round_answer:
+                        num_agents_converge_correct[round_num + 2] += 1 
+                        is_converged = True
+                        print(f"  Round {round_num} answer is empty for Agent {agent_idx + 1}")
+
+                    elif correct_round_answer and not is_converged:
                         num_agents_converge_correct[round_num] += 1 
                         is_converged = True
                     else:
                         missed_patterns += 1
                         missed_patterns_dict[task_num] = (round_answer, correct_answer)
+                     
 
-        print(f"  Correct Answer: {correct_answer}")
+        # print(f"  Correct Answer: {correct_answer}")
     
     # Create a bar chart
-    round_percentage = [(num_agents_converge_correct[round_num] / wrong_correct) * 100 for round_num in range(1, rounds + 2)]
+    round_percentage = [(num_agents_converge_correct[round_num] / wrong_correct) * 100 for round_num in range(1, rounds + 3)]
     
+    plt.figure(figsize=(8, 6)) 
     bars = plt.bar(round_categories, round_percentage)
-    plt.ylabel('Percentage (%) of Tasks')
-    plt.xlabel('Answer Pattern')
-    plt.title(model_name + ': Answer Patterns Across ' + str(num_tasks) + ' Tasks')
+    plt.ylabel('Percentage (%) of Wrong→Correct Answer Tasks')
+    # plt.xlabel('Answer Pattern')
+    plt.title(system + ' ' + model_name + ': Convergence From Wrong→Correct Answer For Each Round')
     plt.xticks(rotation=45, ha='right')  # Rotate labels 45 degrees
 
     # Add percentage labels on top of each bar
@@ -190,9 +203,9 @@ def round_statistics(tasks_answers, model_name, num_agents=3, rounds=5):
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     output_folder = os.path.join(script_dir, 'statistic_images')
-    filepath = os.path.join(output_folder, model_name + '_round_statistics.png')
+    filepath = os.path.join(output_folder, model_name + '_' + system + '_round_statistics.png')
     plt.savefig(filepath)
-    print("Plot saved as " + model_name + "_round_statistics.png")
+    print("Plot saved as " + model_name + '_' + system + "_round_statistics.png")
     plt.clf()
 
      # Create a bar chart
@@ -203,7 +216,7 @@ def round_statistics(tasks_answers, model_name, num_agents=3, rounds=5):
     plt.xlim(-0.5, 0.5) 
     plt.ylabel('Percentage (%) of Tasks')
     plt.xlabel('Answer Pattern')
-    plt.title(model_name + ': Answer Patterns Across ' + str(num_tasks) + ' Tasks')
+    plt.title(system + ' ' + model_name + ': Answer Patterns Across ' + str(num_tasks) + ' Tasks')
     #plt.xticks(rotation=45, ha='right')  # Rotate labels 45 degrees
 
     # Add percentage labels on top of each bar
@@ -216,9 +229,9 @@ def round_statistics(tasks_answers, model_name, num_agents=3, rounds=5):
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     output_folder = os.path.join(script_dir, 'statistic_images')
-    filepath = os.path.join(output_folder, model_name + '_convergence_to_correct.png')
+    filepath = os.path.join(output_folder, model_name + '_' + system + '_convergence_to_correct.png')
     plt.savefig(filepath)
-    print("Plot saved as " + model_name + "_convergence_to_correct.png")
+    print("Plot saved as " + model_name + '_' + system + "_convergence_to_correct.png")
     plt.clf()
 
     return {
@@ -242,10 +255,10 @@ def round_statistics(tasks_answers, model_name, num_agents=3, rounds=5):
 
 # Instruct_statistics.png
 qwen_answers, qwen_round_answers  = extract_answers('transcripts/qwen3b_2026-03-20_21h42m28s')
-
-
-print(qwen_round_answers)
-
 qwen_round_stats = round_statistics(qwen_round_answers, "Qwen2.5-3B-Instruct")
-qwen_stats = statistics(qwen_answers, "Qwen2.5-3B-Instruct")
-print("Qwen stat wrong to correct: ", qwen_stats['Wrong→Correct'])
+#qwen_stats = statistics(qwen_answers, "Qwen2.5-3B-Instruct")
+#print("Qwen stat wrong to correct: ", qwen_stats['Wrong→Correct'])
+
+# qwen_answers_sas, qwen_round_answers_sas  = extract_answers('transcripts/qwen3b_2026-03-21_23h56m25s', num_agents=1)
+# qwen_round_stats_sas = round_statistics(qwen_round_answers_sas, "Qwen2.5-3B-Instruct", system="SAS", num_agents=1)
+#qwen_stats_sas = statistics(qwen_answers_sas, "Qwen2.5-3B-Instruct", system="SAS", num_agents=1)
