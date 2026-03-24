@@ -100,6 +100,9 @@ def json_chat(messages: List[Dict[str, str]],
                 )
                 result = generate_text(prompt, model_name)
 
+                # ADD THIS LINE TO DEBUG
+                print(f"\n[DEBUG RAW OUTPUT from {model_name}]:\n{result}\n" + "-"*50)
+
                 json_content = extract_json(result)
                 if not json_content:
                     raise ValueError("No JSON content found")
@@ -112,8 +115,60 @@ def json_chat(messages: List[Dict[str, str]],
 
         raise RuntimeError("Model failed to produce valid JSON after retries")
 
+    def extract_format(input_string):
+        delimiter = "The answer is:"
+        if delimiter not in input_string:
+            return None
+            
+        parts = input_string.split(delimiter)
+        rationale = parts[0].strip()
+        # Clean up any trailing periods before the delimiter
+        if rationale.endswith('.'):
+            rationale = rationale[:-1].strip()
+            
+        answer = parts[-1].strip()
+        
+        # Use Pydantic's model fields to figure out the correct key for the answer ("vote" vs "decision")
+        expected_keys = getattr(response_format, '__annotations__', {})
+        
+        result_dict = {"rationale": rationale}
+        if "vote" in expected_keys:
+            result_dict["vote"] = answer
+        elif "decision" in expected_keys:
+            result_dict["decision"] = answer
+        else:
+            result_dict["answer"] = answer
+            
+        return result_dict
+
+    def hugging_face_format_chat(max_retries=5):
+        for attempt in range(max_retries):
+            try:
+                # Use the global tokenizer
+                prompt = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True,
+                )
+                result = generate_text(prompt, model_name)
+                print(f"\n[DEBUG RAW OUTPUT from {model_name}]:\n{result}\n" + "-"*50)
+
+                parsed_content = extract_format(result)
+                if not parsed_content:
+                    raise ValueError("Delimiter 'The answer is:' not found in response")
+                
+                return parsed_content
+
+            except Exception as e:
+                print(f"Attempt {attempt+1}/{max_retries} failed on {model_name}: {e}")
+                time.sleep(1)
+
+        raise RuntimeError("Model failed to produce valid format after retries")
+
+    # Switched to hugging_face_format_chat
     if model_name in POSSIBLE_MODELS:
-        return hugging_face_json_chat()
+        # return hugging_face_json_chat() # If the model returns JSON
+        return hugging_face_format_chat() # IF the model uses "The answer is:" format
     else:
         raise ValueError(f"Model {model_name} not supported")
 
