@@ -19,16 +19,10 @@ _TRANSCRIPT_SESSION_STAMP = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
 
 CONFIG = {
     "num_tasks": 1,
-    # "dataset": "openai/gsm8k",   # HuggingFace dataset name
-    # "dataset_config": "main",
-    # "dataset_split": "test",     # "train" or "test"
-    # change dataset to cais/mmlu
-    "dataset": "cais/mmlu",
-    "dataset_config": "all",
-    "dataset_split": "test",
+    "dataset": "openai/gsm8k", # "openai/gsm8k", "cais/mmlu", "ChilleD/StrategyQA", "tasksource/bigbench"
     "num_agents": 3,
-    "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct",
-    "num_rounds": 5,
+    "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct", # "Qwen/Qwen2.5-3B-Instruct", "allenai/Olmo-3-7B-Instruct", "meta-llama/Llama-3.2-3B-Instruct"
+    "num_rounds": 3,
     "num_duplications": 1,
     "extra": "",
     "percentage_special_agents": 1.0,
@@ -37,6 +31,15 @@ CONFIG = {
     "share_mode": "both", # "both", "reasoning", or "answer"
 }
 
+def _get_dataset_info():
+    if CONFIG["dataset"] == "openai/gsm8k":
+        return "openai/gsm8k", "main", "test"
+    elif CONFIG["dataset"] == "cais/mmlu":
+        return "cais/mmlu", "all", "test"
+    elif CONFIG["dataset"] == "ChilleD/StrategyQA":
+        return "ChilleD/StrategyQA", "default", "test"
+    elif CONFIG["dataset"] == "tasksource/bigbench":
+        return "tasksource/bigbench", "sports_understanding", "validation"
 
 def _resolve_transcripts_dir() -> str:
     base = CONFIG["transcripts_dir"]
@@ -47,8 +50,6 @@ def _resolve_transcripts_dir() -> str:
             model_name = "llama3b"
         case "Qwen/Qwen2.5-3B-Instruct":
             model_name = "qwen3b"
-        case "allenai/OLMo-2-0425-1B-Instruct":
-            model_name = "olmo1b"
         case "allenai/Olmo-3-7B-Instruct":
             model_name = "olmo7b"
     folder_name = model_name + "_" + _TRANSCRIPT_SESSION_STAMP
@@ -80,6 +81,17 @@ def _extract_question_answer(dataset_name: str, item: dict):
         return item['question'], answer
     elif dataset_name == "cais/mmlu":
         return item['question'], item['choices'][item['answer']]
+    elif dataset_name == "ChilleD/StrategyQA":
+        # The answer in strategy-qa is a boolean, we translate it to "True"/"False" or "Yes"/"No"
+        return item['question'], "Yes" if item['answer'] else "No"
+    elif dataset_name == "tasksource/bigbench":
+        question = item['inputs']
+        if 'multiple_choice_scores' in item and item['multiple_choice_scores']:
+            correct_idx = item['multiple_choice_scores'].index(1)
+            answer = item['multiple_choice_targets'][correct_idx]
+        else:
+            answer = item['targets'][0] if isinstance(item['targets'], list) else item['targets']
+        return question, answer
     else:
         raise ValueError(f"Unsupported dataset: {dataset_name}")
 
@@ -88,6 +100,7 @@ def load_tasks(num_tasks: int, dataset_name: str, dataset_config: str, split: st
     """Load tasks from a HuggingFace dataset."""
     print(f"Loading {num_tasks} tasks from {dataset_name} ({split} split)...")
     dataset = load_dataset(dataset_name, dataset_config, split=split)
+    
     dataset_short = dataset_name.split('/')[-1].upper()
     tasks = []
     for i, item in enumerate(dataset):
@@ -444,7 +457,8 @@ def main():
     print("Starting Multi-Agent Evaluation")
     init_model(CONFIG["model_for_simulation"])
     prompts = load_prompts()
-    tasks = load_tasks(CONFIG["num_tasks"], CONFIG["dataset"], CONFIG["dataset_config"], CONFIG["dataset_split"])
+    dataset_name, dataset_subset, dataset_split = _get_dataset_info()
+    tasks = load_tasks(CONFIG["num_tasks"], dataset_name, dataset_subset, dataset_split)
 
     eval_results = []
     for task_number, task in enumerate(tasks, start=1):
