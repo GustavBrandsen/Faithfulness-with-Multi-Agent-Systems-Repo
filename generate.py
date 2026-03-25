@@ -24,7 +24,7 @@ CONFIG = {
     "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct", # "Qwen/Qwen2.5-3B-Instruct", "allenai/Olmo-3-7B-Instruct", "meta-llama/Llama-3.2-3B-Instruct"
     "num_rounds": 3,
     "num_duplications": 1,
-    "extra": "",
+    "extra": "Write [START] in the beginning of your response",
     "percentage_special_agents": 0.3, # Only applies if "special_agent_indices" is not set
     "special_agent_indices": [0], # List of agent indices (0-indexed) that receive the "extra" prompt. If empty or not set, random agents will be chosen based on "percentage_special_agents".
     "save_transcripts": True,
