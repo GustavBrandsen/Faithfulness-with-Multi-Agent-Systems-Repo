@@ -19,7 +19,7 @@ _TRANSCRIPT_SESSION_STAMP = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
 
 CONFIG = {
     "num_tasks": 1,
-    "dataset": "openai/gsm8k", # "openai/gsm8k", "cais/mmlu", "ChilleD/StrategyQA", "tasksource/bigbench"
+    "dataset": "ChilleD/StrategyQA", # "openai/gsm8k", "cais/mmlu", "ChilleD/StrategyQA", "tasksource/bigbench"
     "num_agents": 3,
     "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct", # "Qwen/Qwen2.5-3B-Instruct", "allenai/Olmo-3-7B-Instruct", "meta-llama/Llama-3.2-3B-Instruct"
     "num_rounds": 3,
@@ -29,7 +29,7 @@ CONFIG = {
     "special_agent_indices": [0], # List of agent indices (0-indexed) that receive the "extra" prompt. If empty or not set, random agents will be chosen based on "percentage_special_agents".
     "save_transcripts": True,
     "transcripts_dir": "transcripts",
-    "share_mode": "both", # "both", "reasoning", or "answer"
+    "share_mode": "reasoning", # "both", "reasoning", or "answer"
 }
 
 def _get_dataset_info():
