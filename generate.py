@@ -24,8 +24,9 @@ CONFIG = {
     "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct", # "Qwen/Qwen2.5-3B-Instruct", "allenai/Olmo-3-7B-Instruct", "meta-llama/Llama-3.2-3B-Instruct"
     "num_rounds": 3,
     "num_duplications": 1,
-    "extra": "",
-    "percentage_special_agents": 1.0,
+    "extra": "Write [START] in the beginning of your response",
+    "percentage_special_agents": 0.3, # Only applies if "special_agent_indices" is not set
+    "special_agent_indices": [0], # List of agent indices (0-indexed) that receive the "extra" prompt. If empty or not set, random agents will be chosen based on "percentage_special_agents".
     "save_transcripts": True,
     "transcripts_dir": "transcripts",
     "share_mode": "reasoning", # "both", "reasoning", or "answer"
@@ -157,7 +158,10 @@ def _create_agents(task, prompts):
     num_agents = CONFIG["num_agents"]
     extra_prompt = CONFIG["extra"]
     num_special = min(math.ceil(num_agents * CONFIG["percentage_special_agents"]), num_agents)
-    special_indices = random.sample(range(num_agents), num_special)
+
+    special_indices = [idx for idx in CONFIG.get("special_agent_indices", []) if 0 <= idx < num_agents]
+    if not special_indices:
+        special_indices = random.sample(range(num_agents), num_special)
 
     agents = []
     for i in range(num_agents):
