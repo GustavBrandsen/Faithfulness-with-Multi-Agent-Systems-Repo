@@ -148,7 +148,6 @@ def json_chat(messages: List[Dict[str, str]],
                     add_generation_prompt=True,
                 )
                 result = generate_text(prompt, model_name)
-                print(f"\n[DEBUG RAW OUTPUT from {model_name}]:\n{result}\n" + "-"*50)
 
                 parsed_content = extract_format(result)
                 if not parsed_content:
