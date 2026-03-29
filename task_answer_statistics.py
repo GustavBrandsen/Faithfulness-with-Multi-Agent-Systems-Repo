@@ -4,7 +4,33 @@ import matplotlib.pyplot as plt
 import os
 import seaborn
 
+def normalize_answer(text: str) -> str:
+        """Normalize answer format for comparison."""
+        text = str(text).strip().lower()
+        
+        # # Remove parentheses (for coordinates)
+        # text = text.replace('(', '').replace(')', '')
 
+        # Step 1: Remove spaces ONLY inside parentheses: "(x - 2)" → "(x-2)"
+        text = re.sub(r'\(\s*([^)]+?)\s*\)', lambda m: '(' + m.group(1).replace(' ', '') + ')', text)
+    
+        
+        # # Normalize spacing around commas
+        text = ','.join([part.strip() for part in text.split(',')])
+
+        if ',' in text and re.match(r'^[(\s]*[\d\s,.-]+[)\s]*$', text):
+            # This is coordinate-like, safe to remove parentheses and normalize spaces
+            text = text.replace('(', '').replace(')', '')
+            # # Normalize spacing around commas: "1 , 6" or "1, 6" → "1,6"
+            # text = ','.join([part.strip() for part in text.split(',')])
+    
+        
+        # Normalize yes/no to true/false for consistency
+        text = re.sub(r'\byes\b', 'true', text)
+        text = re.sub(r'\bno\b', 'false', text)
+        
+        return text
+    
 def extract_answers(file_path, num_agents=3, num_rounds=3):
     """
     Extract initial, round and final answers, and the correct answer from task transcript files.
@@ -35,9 +61,13 @@ def extract_answers(file_path, num_agents=3, num_rounds=3):
 
         idx = re.findall(task_id_regex, text)[0]
         result = re.findall(answer_regex, text)
-        init_answer = [ans.strip().lower() for ans in result[0:num_agents]]
-        final_answer = [ans.strip().lower() for ans in result[num_agents:]]
-        correct_answer = [ans.strip().lower() for ans in re.findall(correct_answer_regex, text)]
+        # init_answer = [ans.strip().lower() for ans in result[0:num_agents]]
+        # final_answer = [ans.strip().lower() for ans in result[num_agents:]]
+        # correct_answer = [ans.strip().lower() for ans in re.findall(correct_answer_regex, text)]
+        init_answer = [normalize_answer(ans) for ans in result[0:num_agents]]
+        final_answer = [normalize_answer(ans) for ans in result[num_agents:]]
+        correct_answer = [normalize_answer(ans) for ans in re.findall(correct_answer_regex, text)]
+
 
         answers[idx] = (init_answer, final_answer, correct_answer)
 
@@ -52,7 +82,8 @@ def extract_answers(file_path, num_agents=3, num_rounds=3):
             person_round_answer = []
             for agent_num in range(1, num_agents + 1):
                 round_answer = re.findall(round_answer_regex, person_round[agent_num - 1])
-                person_round_answer.append(round_answer[0].strip().lower() if round_answer else '')
+                # person_round_answer.append(round_answer[0].strip().lower() if round_answer else '')
+                person_round_answer.append(normalize_answer(round_answer[0]) if round_answer else '')
             rounds_a[round_num] = person_round_answer
         rounds_a[num_rounds + 1] = final_answer
         print(f"Task {idx} round answers: {rounds_a}\n")
@@ -467,123 +498,147 @@ def plot_round_statistics_comparison(datasets_data, model_name, share_mode='Both
 
 
 # ------ Comparison between different datasets, QWEN, both --------
-qwen_answers_gsm8k, qwen_round_answers_gsm8k = extract_answers('transcripts/both/qwen3b_2026-03-25_02h47m03s')
-qwen_answers_mmlu, qwen_round_answers_mmlu = extract_answers('transcripts/both/qwen3b_2026-03-25_02h48m55s')
-qwen_answers_StrategyQA, qwen_round_answers_StrategyQA = extract_answers('transcripts/both/qwen3b_2026-03-25_02h49m50s')
-qwen_answers_bigbench, qwen_round_answers_bigbench = extract_answers('transcripts/both/qwen3b_2026-03-25_02h50m54s')
+qwen_answers_gsm8k, qwen_round_answers_gsm8k = extract_answers('transcripts/...')
+qwen_answers_mmlu, qwen_round_answers_mmlu = extract_answers('transcripts/...')
+qwen_answers_StrategyQA, qwen_round_answers_StrategyQA = extract_answers('transcripts/...')
+qwen_answers_bigbench, qwen_round_answers_bigbench = extract_answers('transcripts/...')
 
 
 # Calculate statistics for each
-stats_gsm8k = calculate_pattern_statistics(qwen_answers_gsm8k)
-stats_mmlu = calculate_pattern_statistics(qwen_answers_mmlu)
-stats_StrategyQA = calculate_pattern_statistics(qwen_answers_StrategyQA)
-stats_bigbench = calculate_pattern_statistics(qwen_answers_bigbench)
+stats_gsm8k_qwen = calculate_pattern_statistics(qwen_answers_gsm8k)
+stats_mmlu_qwen = calculate_pattern_statistics(qwen_answers_mmlu)
+stats_StrategyQA_qwen = calculate_pattern_statistics(qwen_answers_StrategyQA)
+stats_bigbench_qwen = calculate_pattern_statistics(qwen_answers_bigbench)
 
 # Create comparison plot
 datasets_data = {
-    'openai/gsm8k': stats_gsm8k,
-    'cais/mmlu': stats_mmlu,
-    'ChilleD/StrategyQA': stats_StrategyQA,
-    'tasksource/bigbench': stats_bigbench
+    'openai/gsm8k': stats_gsm8k_qwen,
+    'cais/mmlu': stats_mmlu_qwen,
+    'ChilleD/StrategyQA': stats_StrategyQA_qwen,
+    'tasksource/bigbench': stats_bigbench_qwen
 }
 
 plot_pattern_statistics_comparison(datasets_data, "Qwen2.5-3B-Instruct")
 
 # Calculate round statistics for each
-round_stats_gsm8k = calculate_round_statistics(qwen_round_answers_gsm8k)
-round_stats_mmlu = calculate_round_statistics(qwen_round_answers_mmlu)
-round_stats_StrategyQA = calculate_round_statistics(qwen_round_answers_StrategyQA)
-round_stats_bigbench = calculate_round_statistics(qwen_round_answers_bigbench)
+round_stats_gsm8k_qwen = calculate_round_statistics(qwen_round_answers_gsm8k)
+round_stats_mmlu_qwen = calculate_round_statistics(qwen_round_answers_mmlu)
+round_stats_StrategyQA_qwen = calculate_round_statistics(qwen_round_answers_StrategyQA)
+round_stats_bigbench_qwen = calculate_round_statistics(qwen_round_answers_bigbench)
 
 
 # Create comparison plot
 datasets_data = {
-    'openai/gsm8k': round_stats_gsm8k,
-    'cais/mmlu': round_stats_mmlu,
-    'ChilleD/StrategyQA': round_stats_StrategyQA,
-    'tasksource/bigbench': round_stats_bigbench
+    'openai/gsm8k': round_stats_gsm8k_qwen,
+    'cais/mmlu': round_stats_mmlu_qwen,
+    'ChilleD/StrategyQA': round_stats_StrategyQA_qwen,
+    'tasksource/bigbench': round_stats_bigbench_qwen
 }
 
 plot_round_statistics_comparison(datasets_data, "Qwen2.5-3B-Instruct")
 
 
-# ------ Comparison between different datasets, Olmo, both --------
-olmo_answers_gsm8k, olmo_round_answers_gsm8k = extract_answers('transcripts/both/olmo7b_2026-03-25_02h47m09s')
-olmo_answers_mmlu, olmo_round_answers_mmlu = extract_answers('transcripts/both/olmo7b_2026-03-25_02h48m55s')
-olmo_answers_StrategyQA, olmo_round_answers_StrategyQA = extract_answers('transcripts/both/olmo7b_2026-03-25_02h49m50s')
-olmo_answers_bigbench, olmo_round_answers_bigbench = extract_answers('transcripts/olmo7b_2026-03-25_22h23m03s')
-
+# # ------ Comparison between different datasets, Olmo, both --------
+olmo_answers_gsm8k, olmo_round_answers_gsm8k = extract_answers('transcripts/...')
+olmo_answers_mmlu, olmo_round_answers_mmlu = extract_answers('transcripts/...')
+olmo_answers_StrategyQA, olmo_round_answers_StrategyQA = extract_answers('transcripts/...')
+olmo_answers_bigbench, olmo_round_answers_bigbench = extract_answers('transcripts/...')
 
 # Calculate statistics for each
-stats_gsm8k = calculate_pattern_statistics(olmo_answers_gsm8k)
-stats_mmlu = calculate_pattern_statistics(olmo_answers_mmlu)
-stats_StrategyQA = calculate_pattern_statistics(olmo_answers_StrategyQA)
-stats_bigbench = calculate_pattern_statistics(olmo_answers_bigbench)
+stats_gsm8k_olmo = calculate_pattern_statistics(olmo_answers_gsm8k)
+stats_mmlu_olmo = calculate_pattern_statistics(olmo_answers_mmlu)
+stats_StrategyQA_olmo = calculate_pattern_statistics(olmo_answers_StrategyQA)
+stats_bigbench_olmo = calculate_pattern_statistics(olmo_answers_bigbench)
 
 # Create comparison plot
 datasets_data = {
-    'openai/gsm8k': stats_gsm8k,
-    'cais/mmlu': stats_mmlu,
-    'ChilleD/StrategyQA': stats_StrategyQA,
-    'tasksource/bigbench': stats_bigbench
+    'openai/gsm8k': stats_gsm8k_olmo,
+    'cais/mmlu': stats_mmlu_olmo,
+    'ChilleD/StrategyQA': stats_StrategyQA_olmo,
+    'tasksource/bigbench': stats_bigbench_olmo,
 }
 
-plot_pattern_statistics_comparison(datasets_data, "Olmo-3-7B-Instruct")
+plot_pattern_statistics_comparison(datasets_data, "Olmo-3-7B-Instruct dataset comparison")
 
 # Calculate round statistics for each
-round_stats_gsm8k = calculate_round_statistics(olmo_round_answers_gsm8k)
-round_stats_mmlu = calculate_round_statistics(olmo_round_answers_mmlu)
-round_stats_StrategyQA = calculate_round_statistics(olmo_round_answers_StrategyQA)
-round_stats_bigbench = calculate_round_statistics(olmo_round_answers_bigbench)
+round_stats_gsm8k_olmo = calculate_round_statistics(olmo_round_answers_gsm8k)
+round_stats_mmlu_olmo = calculate_round_statistics(olmo_round_answers_mmlu)
+round_stats_StrategyQA_olmo = calculate_round_statistics(olmo_round_answers_StrategyQA)
+round_stats_bigbench_olmo = calculate_round_statistics(olmo_round_answers_bigbench)
 
 
 # Create comparison plot
 datasets_data = {
-    'openai/gsm8k': round_stats_gsm8k,
-    'cais/mmlu': round_stats_mmlu,
-    'ChilleD/StrategyQA': round_stats_StrategyQA,
-    'tasksource/bigbench': round_stats_bigbench
+    'openai/gsm8k': round_stats_gsm8k_olmo,
+    'cais/mmlu': round_stats_mmlu_olmo,
+    'ChilleD/StrategyQA': round_stats_StrategyQA_olmo,
+    'tasksource/bigbench': round_stats_bigbench_olmo
 }
 
 plot_round_statistics_comparison(datasets_data, "Olmo-3-7B-Instruct")
 
 
-# ------ Comparison between different datasets; Llama --------
-llama_answers_gsm8k, llama_round_answers_gsm8k = extract_answers('transcripts/both/llama3b_2026-03-25_02h47m09s')
-llama_answers_mmlu, llama_round_answers_mmlu = extract_answers('transcripts/llama3b_2026-03-25_02h48m55s')
-llama_answers_StrategyQA, llama_round_answers_StrategyQA = extract_answers('transcripts/llama3b_2026-03-25_02h49m50s')
-llama_answers_bigbench, llama_round_answers_bigbench = extract_answers('transcripts/llama3b_2026-03-25_22h23m06s')
+# ------ Comparison between different datasets; Llama, both --------
+llama_answers_gsm8k, llama_round_answers_gsm8k = extract_answers('transcripts/...')
+llama_answers_mmlu, llama_round_answers_mmlu = extract_answers('transcripts/...')
+llama_answers_StrategyQA, llama_round_answers_StrategyQA = extract_answers('transcripts/...')
+llama_answers_bigbench, llama_round_answers_bigbench = extract_answers('transcripts/...')
 
 
 # Calculate statistics for each
-stats_gsm8k = calculate_pattern_statistics(llama_answers_gsm8k)
-stats_mmlu = calculate_pattern_statistics(llama_answers_mmlu)
-stats_StrategyQA = calculate_pattern_statistics(llama_answers_StrategyQA)
-stats_bigbench = calculate_pattern_statistics(llama_answers_bigbench)
+stats_gsm8k_llama = calculate_pattern_statistics(llama_answers_gsm8k)
+stats_mmlu_llama = calculate_pattern_statistics(llama_answers_mmlu)
+stats_StrategyQA_llama = calculate_pattern_statistics(llama_answers_StrategyQA)
+stats_bigbench_llama = calculate_pattern_statistics(llama_answers_bigbench)
+
+print(stats_gsm8k_llama['num_tasks'])
+print(stats_mmlu_llama['num_tasks'])
+print(stats_StrategyQA_llama['num_tasks'])
+print(stats_bigbench_llama['num_tasks'])
 
 # Create comparison plot
 datasets_data = {
-    'openai/gsm8k': stats_gsm8k,
-    'cais/mmlu': stats_mmlu,
-    'ChilleD/StrategyQA': stats_StrategyQA,
-    'tasksource/bigbench': stats_bigbench
+    'openai/gsm8k': stats_gsm8k_llama,
+    'cais/mmlu': stats_mmlu_llama,
+    'ChilleD/StrategyQA': stats_StrategyQA_llama,
+    'tasksource/bigbench': stats_bigbench_llama
 }
 
 plot_pattern_statistics_comparison(datasets_data, "Llama-3.2-3B-Instruct")
 
+# print(stats_gsm8k_llama['num_tasks'])
+# print(stats_mmlu_llama['num_tasks'])
+# print(stats_StrategyQA_llama['num_tasks'])
+# print(stats_bigbench_llama['num_tasks'])
+
 # Calculate round statistics for each
-round_stats_gsm8k = calculate_round_statistics(llama_round_answers_gsm8k)
-round_stats_mmlu = calculate_round_statistics(llama_round_answers_mmlu)
-round_stats_StrategyQA = calculate_round_statistics(llama_round_answers_StrategyQA)
-round_stats_bigbench = calculate_round_statistics(llama_round_answers_bigbench)
+round_stats_gsm8k_llama = calculate_round_statistics(llama_round_answers_gsm8k)
+round_stats_mmlu_llama = calculate_round_statistics(llama_round_answers_mmlu)
+round_stats_StrategyQA_llama = calculate_round_statistics(llama_round_answers_StrategyQA)
+round_stats_bigbench_llama = calculate_round_statistics(llama_round_answers_bigbench)
 
 
 # Create comparison plot
 datasets_data = {
-    'openai/gsm8k': round_stats_gsm8k,
-    'cais/mmlu': round_stats_mmlu,
-    'ChilleD/StrategyQA': round_stats_StrategyQA,
-    'tasksource/bigbench': round_stats_bigbench
+    'openai/gsm8k': round_stats_gsm8k_llama,
+    'cais/mmlu': round_stats_mmlu_llama,
+    'ChilleD/StrategyQA': round_stats_StrategyQA_llama,
+    'tasksource/bigbench': round_stats_bigbench_llama
 }
 
 plot_round_statistics_comparison(datasets_data, "Llama-3.2-3B-Instruct")
+
+# Test normalization function
+print(normalize_answer("1, 4"))
+print(normalize_answer("1,4"))
+print(normalize_answer("no"))
+print(normalize_answer("yes"))
+print(normalize_answer("false"))
+print(normalize_answer("False, true"))
+print(normalize_answer("It is implausible"))
+print(normalize_answer("(1,6)"))
+print(normalize_answer("(1, 6)"))
+print(normalize_answer("(x - 2)(x^2 + 4x + 5)"))
+print(normalize_answer("(x-2)(x^2+4x+5)"))
+print(normalize_answer("infinite, non abelian group"))
+print(normalize_answer("abelian group"))
