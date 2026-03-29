@@ -748,23 +748,6 @@ transcript_data = {
 }
 dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", cw_round_figure=True)
 
-# --- Malicious prompt comparison for Olmo ---
-transcript_data = {
-    'openai/gsm8k': 'transcripts/olmo7b_job9346_2026-03-29_22h56m53s',
-    'openai/gsm8k Malicious Agent 1': 'transcripts/olmo7b_job9343_2026-03-29_22h39m50s',
-    'openai/gsm8k Malicious Agent 3': 'transcripts/olmo7b_job9349_2026-03-29_23h03m15s',
-}
-dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", cw_round_figure=True)
-
-# --- Malicious prompt comparison for Llama ---
-transcript_data = {
-    'openai/gsm8k': 'transcripts/llama3b_job9344_2026-03-29_22h39m48s',
-    'openai/gsm8k Malicious Agent 1': 'transcripts/llama3b_job9341_2026-03-29_22h39m50s',
-    'openai/gsm8k Malicious Agent 3': 'transcripts/llama3b_job9347_2026-03-29_23h00m21s',
-}
-dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", cw_round_figure=True)
-
-
 # # # ------ Comparison between different datasets, Olmo, both --------
 # transcript_data = {
 #     'openai/gsm8k': 'transcripts/olmo7b_2026-03-29_15h41m56s',
@@ -783,6 +766,13 @@ dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", cw_round_figure=Tru
 
 # dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", share_mode="Comparison")
 
+# --- Malicious prompt comparison for Olmo ---
+transcript_data = {
+    'openai/gsm8k': 'transcripts/olmo7b_job9346_2026-03-29_22h56m53s',
+    'openai/gsm8k Malicious Agent 1': 'transcripts/olmo7b_job9343_2026-03-29_22h39m50s',
+    'openai/gsm8k Malicious Agent 3': 'transcripts/olmo7b_job9349_2026-03-29_23h03m15s',
+}
+dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", cw_round_figure=True)
 
 # # ------ Comparison between different datasets; Llama, both --------
 # transcript_data = {
@@ -802,6 +792,14 @@ dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", cw_round_figure=Tru
 # }
 
 # dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", share_mode="Comparison")
+
+# --- Malicious prompt comparison for Llama ---
+transcript_data = {
+    'openai/gsm8k': 'transcripts/llama3b_job9344_2026-03-29_22h39m48s',
+    'openai/gsm8k Malicious Agent 1': 'transcripts/llama3b_job9341_2026-03-29_22h39m50s',
+    'openai/gsm8k Malicious Agent 3': 'transcripts/llama3b_job9347_2026-03-29_23h00m21s',
+}
+dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", cw_round_figure=True)
 
 
 # Test normalization function
