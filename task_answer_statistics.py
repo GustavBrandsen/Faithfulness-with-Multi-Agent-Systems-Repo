@@ -77,11 +77,14 @@ def extract_answers(file_path, num_agents=3, num_rounds=3):
             person_round = [pr for pr in person_round if pr.startswith("Person")]
             person_round_answer = []
 
+
             for agent_num in range(1, num_agents + 1):
                 round_answer = re.findall(round_answer_regex, person_round[agent_num - 1])
                 person_round_answer.append(normalize_answer(round_answer[0]) if round_answer else '')
             
+            
             rounds_a[round_num] = person_round_answer
+        
         
         rounds_a[num_rounds + 1] = final_answer
         round_answers[idx] = (init_answer, rounds_a, correct_answer)
@@ -143,6 +146,7 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, share_mode='Bo
         system: 'MAS' or 'SAS'
         num_agents: Number of agents
         share_mode_comparison: Whether to compare different share modes
+        share_mode_comparison: Whether to compare different share modes
     """
     categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct']
     
@@ -180,6 +184,45 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, share_mode='Bo
     
     ax.set_ylabel('Percentage (%) of Tasks')
     ax.set_xlabel('Answer Pattern')
+    
+    if share_mode == "" or share_mode == "Comparison":
+        
+        ax.set_title(f'{num_agents} Agents {system}, {model_name}:\n Answer Patterns Comparison Across Share-Modes')
+        ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
+        ax.set_xticklabels(categories, rotation=45, ha='right')
+        ax.legend()
+        
+        plt.tight_layout()
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        output_folder = os.path.join(script_dir, 'statistic_images')
+        os.makedirs(output_folder, exist_ok=True)
+        
+        dataset_suffix = '_'.join(datasets_data.keys())
+        filepath = os.path.join(output_folder, f"{model_name}_{system}_share-mode_comparison_statistics.png")
+        plt.savefig(filepath)
+        print(f"Comparison plot saved as {model_name}_{system}_share-mode_comparison_statistics.png")
+        # plt.clf()
+        plt.close()
+
+    else:
+        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\n Answer Patterns Comparison Across Datasets')
+        ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
+        ax.set_xticklabels(categories, rotation=45, ha='right')
+        ax.legend()
+        
+        plt.tight_layout()
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        output_folder = os.path.join(script_dir, 'statistic_images')
+        os.makedirs(output_folder, exist_ok=True)
+        
+        dataset_suffix = '_'.join(datasets_data.keys())
+        filepath = os.path.join(output_folder, f"{model_name}_{system}_comparison_statistics_{share_mode}.png")
+        plt.savefig(filepath)
+        print(f"Comparison plot saved as {model_name}_{system}_comparison_statistics_{share_mode}.png")
+        # plt.clf()
+        plt.close()
     
     if share_mode == "" or share_mode == "Comparison":
         
