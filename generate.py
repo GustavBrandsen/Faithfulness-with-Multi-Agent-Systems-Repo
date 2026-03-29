@@ -16,7 +16,11 @@ import ast
 
 from utils import json_chat, replace_prompt, VoteResponse, normal_chat, init_model
 
-_TRANSCRIPT_SESSION_STAMP = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
+slurm_id = os.environ.get("SLURM_JOB_ID", "")
+if slurm_id:
+    _TRANSCRIPT_SESSION_STAMP =f"job{slurm_id}_{datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')}"
+else:
+    _TRANSCRIPT_SESSION_STAMP = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms") # include microseconds if slurmID is unavailable
 
 CONFIG = {
     "num_tasks": 1,
@@ -451,7 +455,7 @@ def save_session_summary(total_seconds: float, results_file: str) -> str:
         f.write(f"Avg time per task: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds / CONFIG['num_tasks']))}" + "\n")
         f.write(f"Total time: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds))}" + "\n")
         f.write(f"Shared content mode: {CONFIG.get('share_mode', '')}" + "\n")
-        if extra_prompt == "" or special_agents == []:
+        if extra_prompt == "" or (special_agents == [] and CONFIG['percentage_special_agents'] == 0.0):
             f.write("No extra prompt was given")
         else:
             if isinstance(special_agents, list) and len(special_agents) > 0:
