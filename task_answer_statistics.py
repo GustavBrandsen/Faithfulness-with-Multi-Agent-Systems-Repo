@@ -43,7 +43,6 @@ def extract_answers(file_path, num_agents=3, num_rounds=3):
     """
     answer_regex = r"(?<=answered: )(.+?)(?=(?:\.\s|\n|$))"
     correct_answer_regex = r"(?<=Correct Answer: )(.+)"
-    #round_answer_regex = r"(?<=The answer is: )(.+?)(?=(?:\.\s|\n|$))"
     round_answer_regex = r"(?<=The answer is: )(.+?)(?=(?:\.\s|\n|\[SHARED\]|$|\.$))"
     task_id_regex = r"(?<=Task ID: )(\d+)"
 
@@ -61,9 +60,6 @@ def extract_answers(file_path, num_agents=3, num_rounds=3):
 
         idx = re.findall(task_id_regex, text)[0]
         result = re.findall(answer_regex, text)
-        # init_answer = [ans.strip().lower() for ans in result[0:num_agents]]
-        # final_answer = [ans.strip().lower() for ans in result[num_agents:]]
-        # correct_answer = [ans.strip().lower() for ans in re.findall(correct_answer_regex, text)]
         init_answer = [normalize_answer(ans) for ans in result[0:num_agents]]
         final_answer = [normalize_answer(ans) for ans in result[num_agents:]]
         correct_answer = [normalize_answer(ans) for ans in re.findall(correct_answer_regex, text)]
@@ -80,14 +76,14 @@ def extract_answers(file_path, num_agents=3, num_rounds=3):
             person_round = re.split(r'\n\s*(?=Person \d+:)', rounds[round_num - 1])
             person_round = [pr for pr in person_round if pr.startswith("Person")]
             person_round_answer = []
+
             for agent_num in range(1, num_agents + 1):
                 round_answer = re.findall(round_answer_regex, person_round[agent_num - 1])
-                # person_round_answer.append(round_answer[0].strip().lower() if round_answer else '')
                 person_round_answer.append(normalize_answer(round_answer[0]) if round_answer else '')
+            
             rounds_a[round_num] = person_round_answer
-        rounds_a[num_rounds + 1] = final_answer
-        print(f"Task {idx} round answers: {rounds_a}\n")
         
+        rounds_a[num_rounds + 1] = final_answer
         round_answers[idx] = (init_answer, rounds_a, correct_answer)
          
     return answers, round_answers
@@ -146,6 +142,7 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, share_mode='Bo
         share_mode: 'Both', 'Reasoning', or 'Answer'
         system: 'MAS' or 'SAS'
         num_agents: Number of agents
+        share_mode_comparison: Whether to compare different share modes
     """
     categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct']
     
@@ -183,22 +180,45 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, share_mode='Bo
     
     ax.set_ylabel('Percentage (%) of Tasks')
     ax.set_xlabel('Answer Pattern')
-    ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\n Answer Patterns Comparison Across Datasets')
-    ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
-    ax.set_xticklabels(categories, rotation=45, ha='right')
-    ax.legend()
     
-    plt.tight_layout()
-    
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_folder = os.path.join(script_dir, 'statistic_images')
-    os.makedirs(output_folder, exist_ok=True)
-    
-    dataset_suffix = '_'.join(datasets_data.keys())
-    filepath = os.path.join(output_folder, f"{model_name}_{system}_comparison_statistics_{share_mode}.png")
-    plt.savefig(filepath)
-    print(f"Comparison plot saved as {model_name}_{system}_comparison_statistics_{share_mode}.png")
-    plt.clf()
+    if share_mode == "" or share_mode == "Comparison":
+        
+        ax.set_title(f'{num_agents} Agents {system}, {model_name}:\n Answer Patterns Comparison Across Share-Modes')
+        ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
+        ax.set_xticklabels(categories, rotation=45, ha='right')
+        ax.legend()
+        
+        plt.tight_layout()
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        output_folder = os.path.join(script_dir, 'statistic_images')
+        os.makedirs(output_folder, exist_ok=True)
+        
+        dataset_suffix = '_'.join(datasets_data.keys())
+        filepath = os.path.join(output_folder, f"{model_name}_{system}_share-mode_comparison_statistics.png")
+        plt.savefig(filepath)
+        print(f"Comparison plot saved as {model_name}_{system}_share-mode_comparison_statistics.png")
+        # plt.clf()
+        plt.close()
+
+    else:
+        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\n Answer Patterns Comparison Across Datasets')
+        ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
+        ax.set_xticklabels(categories, rotation=45, ha='right')
+        ax.legend()
+        
+        plt.tight_layout()
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        output_folder = os.path.join(script_dir, 'statistic_images')
+        os.makedirs(output_folder, exist_ok=True)
+        
+        dataset_suffix = '_'.join(datasets_data.keys())
+        filepath = os.path.join(output_folder, f"{model_name}_{system}_comparison_statistics_{share_mode}.png")
+        plt.savefig(filepath)
+        print(f"Comparison plot saved as {model_name}_{system}_comparison_statistics_{share_mode}.png")
+        # plt.clf()
+        plt.close()
 
 # def plot_pattern_statistics_comparison(datasets_data, model_name, share_mode='Both', system='MAS', num_agents=3):
 #     """
@@ -494,151 +514,264 @@ def plot_round_statistics_comparison(datasets_data, model_name, share_mode='Both
     filepath = os.path.join(output_folder, f"{model_name}_{system}_comparison_round_statistics_{share_mode}.png")
     plt.savefig(filepath)
     print(f"Comparison round plot saved as {model_name}_{system}_comparison_round_statistics_{share_mode}.png")
-    plt.clf()
+    # plt.clf()
+    plt.close()
 
 
-# ------ Comparison between different datasets, QWEN, both --------
-qwen_answers_gsm8k, qwen_round_answers_gsm8k = extract_answers('transcripts/...')
-qwen_answers_mmlu, qwen_round_answers_mmlu = extract_answers('transcripts/...')
-qwen_answers_StrategyQA, qwen_round_answers_StrategyQA = extract_answers('transcripts/...')
-qwen_answers_bigbench, qwen_round_answers_bigbench = extract_answers('transcripts/...')
+def calculate_round_statistics_cw(tasks_answers, num_agents=3, rounds=3):
+    """Calculate round convergence statistics WITHOUT creating a plot. Returns raw counts."""
+    correct_wrong = 0
+    num_agents_converge_wrong = dict()
+    
+    for round_num in range(1, rounds + 1):
+        num_agents_converge_wrong[round_num] = 0
+    num_agents_converge_wrong[rounds + 1] = 0
+    num_agents_converge_wrong[rounds + 2] = 0
+
+    num_tasks = len(tasks_answers)
+    is_converged = False
+
+    for task_num, (init_answer, round_answers, correct_answer) in tasks_answers.items():
+        final_answer = round_answers[rounds + 1]
+
+        for agent_idx, agent_answer in enumerate(zip(init_answer, final_answer)): 
+            init_correct = agent_answer[0] == correct_answer[0]
+            correct_to_wrong = correct_answer[0] != agent_answer[1]
+            is_converged = False 
+
+            if init_correct and correct_to_wrong:
+                correct_wrong += 1
+
+                for round_num, round_answer in round_answers.items():
+                    wrong_round_answer = round_answer[agent_idx] != correct_answer[0]
+
+                    if round_num == rounds and not is_converged and round_answer[agent_idx] == '':
+                        num_agents_converge_wrong[round_num + 2] += 1 
+                        is_converged = True
+                        break
+
+                    elif wrong_round_answer and not is_converged:
+                        num_agents_converge_wrong[round_num] += 1 
+                        is_converged = True
+                        break
+                    else:
+                        continue
+                       
+    return {
+        'correct_wrong': correct_wrong,
+        'num_agents_converge_wrong': num_agents_converge_wrong,
+        'num_tasks': num_tasks,
+        'num_agents': num_agents,
+        'rounds': rounds
+    }
+
+def plot_round_statistics_comparison_cw(datasets_data, model_name, share_mode='Both', system="MAS", num_agents=3, rounds=3):
+    """
+    Plot round convergence statistics across multiple datasets side-by-side.
+    
+    Args:
+        datasets_data: Dict like {'openai-gsm8k': stats_dict, 'cais-mmlu': stats_dict, ...}
+        model_name: Name of the model (for title/filename)
+        share_mode: 'Both', 'Reasoning', or 'Answer'
+        system: 'MAS' or 'SAS'
+        num_agents: Number of agents
+        rounds: Number of rounds
+    """
+    # Build round categories
+    round_categories = []
+    for round_num in range(1, rounds + 1):
+        round_categories.append(f'Round {round_num}')
+    round_categories.append(f'Final Answer')
+    round_categories.append(f'Unknown\nConvergence\nRound')
+    
+    fig, ax = plt.subplots(figsize=(14, 6))
+    
+    x = range(len(round_categories))
+    bar_width = 0.15
+    
+    # Generate color palette for datasets
+    #colors = plt.cm.Set3(range(len(datasets_data)))
+    colors = seaborn.color_palette("deep", n_colors=len(datasets_data))
+    
+    for idx, (dataset_name, stats) in enumerate(datasets_data.items()):
+        correct_wrong = stats['correct_wrong']
+        
+        if correct_wrong == 0:
+            print(f"Warning: {dataset_name} has no 'Correct→Wrong' conversions")
+            continue
+        
+        # Extract convergence counts for each round
+        num_agents_converge_wrong = stats['num_agents_converge_wrong']
+        round_percentages = [(num_agents_converge_wrong[round_num] / correct_wrong) * 100 
+                             for round_num in range(1, rounds + 3)]
+        
+        # Offset bars for side-by-side display
+        offset = bar_width * idx
+        bars = ax.bar([i + offset for i in x], round_percentages, bar_width, 
+                      label=dataset_name, color=colors[idx], alpha=0.8)
+        
+        # Add percentage labels
+        for bar, percentage in zip(bars, round_percentages):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height,
+                   f'{percentage:.1f}%',
+                   ha='center', va='bottom', fontsize=7)
+    
+    ax.set_ylabel('Percentage (%) of Correct→Wrong Answer Tasks')
+    ax.set_xlabel('Round')
+    ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\n Convergence From Correct→Wrong Answer')
+    ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
+    ax.set_xticklabels(round_categories, rotation=45, ha='right')
+    ax.legend()
+    
+    plt.tight_layout()
+    
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_folder = os.path.join(script_dir, 'statistic_images')
+    os.makedirs(output_folder, exist_ok=True)
+    
+    filepath = os.path.join(output_folder, f"{model_name}_{system}_cw_comparison_round_statistics_{share_mode}.png")
+    plt.savefig(filepath)
+    print(f"Comparison round plot saved as {model_name}_{system}_cw_comparison_round_statistics_{share_mode}.png")
+    # plt.clf()
+    plt.close()
 
 
-# Calculate statistics for each
-stats_gsm8k_qwen = calculate_pattern_statistics(qwen_answers_gsm8k)
-stats_mmlu_qwen = calculate_pattern_statistics(qwen_answers_mmlu)
-stats_StrategyQA_qwen = calculate_pattern_statistics(qwen_answers_StrategyQA)
-stats_bigbench_qwen = calculate_pattern_statistics(qwen_answers_bigbench)
+def dataset_comparison(transcripts, model_name, round_figure=False, cw_round_figure=False, share_mode='Both', system='MAS', num_agents=3, rounds=3):
+    """
+    Main function to perform dataset comparison for a given model and share mode.
+    
+    Args:
+        transcripts: Dict like {'openai-gsm8k': 'path/to/transcripts', 'cais-mmlu': 'path/to/transcripts', ...}
+        model_name: Name of the model (e.g., "Qwen2.5-3B-Instruct")
+        share_mode: 'Both', 'Reasoning', or 'Answer'
+        system: 'MAS' or 'SAS'
+        num_agents: Number of agents involved in the simulation
+        rounds: Number of rounds in the simulation
+    """
+    datasets_data = dict()
+    if round_figure:
+        datasets_data_round = dict()
+    if cw_round_figure:
+        datasets_data_cw_round = dict()
 
-# Create comparison plot
-datasets_data = {
-    'openai/gsm8k': stats_gsm8k_qwen,
-    'cais/mmlu': stats_mmlu_qwen,
-    'ChilleD/StrategyQA': stats_StrategyQA_qwen,
-    'tasksource/bigbench': stats_bigbench_qwen
+    for dataset_name, transcript_path in transcripts.items():
+        # Extract answers for each dataset
+        answers, round_answers = extract_answers(transcript_path)
+
+        # Calculate statistics for each dataset
+        stats = calculate_pattern_statistics(answers)
+        if round_figure:
+            round_stats = calculate_round_statistics(round_answers, num_agents=num_agents, rounds=rounds)
+            datasets_data_round[dataset_name] = round_stats
+        if cw_round_figure:
+            cw_round_stats = calculate_round_statistics_cw(round_answers, num_agents=num_agents, rounds=rounds)
+            datasets_data_cw_round[dataset_name] = cw_round_stats
+            
+        # Store statistics for comparison
+        datasets_data[dataset_name] = stats
+    
+    plot_pattern_statistics_comparison(datasets_data, model_name, share_mode, system)
+    if round_figure:
+        plot_round_statistics_comparison_cw(datasets_data_round, model_name, share_mode, system)
+    if cw_round_figure:
+        plot_round_statistics_comparison_cw(datasets_data_cw_round, model_name, share_mode, system)
+
+
+
+# # ------ Comparison between different datasets, QWEN, both --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/qwen3b_2026-03-29_00h31m15s',
+#     'cais/mmlu': 'transcripts/qwen3b_2026-03-29_15h34m56s',
+#     'ChilleD/StrategyQA': 'transcripts/qwen3b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/qwen3b_2026-03-29_03h35m18s'
+# }
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True)
+
+# # --- share-mode comparison for Qwen ---
+# transcript_data = {
+#     'tasksource/bigbench both': 'transcripts/qwen3b_2026-03-29_03h35m18s',
+#     'tasksource/bigbench reasoning': 'transcripts/qwen3b_2026-03-29_21h37m18s',
+#     'tasksource/bigbench answer': 'transcripts/qwen3b_2026-03-29_21h46m31s'
+# }
+
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", share_mode="Comparison")
+
+# --- Malicious prompt comparison for Qwen ---
+transcript_data = {
+    'openai/gsm8k': 'transcripts/qwen3b_job9345_2026-03-29_22h41m44s',
+    'openai/gsm8k Malicious Agent 1': 'transcripts/qwen3b_job9342_2026-03-29_22h39m50s',
+    'openai/gsm8k Malicious Agent 3': 'transcripts/qwen3b_job9348_2026-03-29_23h00m22s',
 }
+dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", cw_round_figure=True)
 
-plot_pattern_statistics_comparison(datasets_data, "Qwen2.5-3B-Instruct")
-
-# Calculate round statistics for each
-round_stats_gsm8k_qwen = calculate_round_statistics(qwen_round_answers_gsm8k)
-round_stats_mmlu_qwen = calculate_round_statistics(qwen_round_answers_mmlu)
-round_stats_StrategyQA_qwen = calculate_round_statistics(qwen_round_answers_StrategyQA)
-round_stats_bigbench_qwen = calculate_round_statistics(qwen_round_answers_bigbench)
-
-
-# Create comparison plot
-datasets_data = {
-    'openai/gsm8k': round_stats_gsm8k_qwen,
-    'cais/mmlu': round_stats_mmlu_qwen,
-    'ChilleD/StrategyQA': round_stats_StrategyQA_qwen,
-    'tasksource/bigbench': round_stats_bigbench_qwen
+# --- Malicious prompt comparison for Olmo ---
+transcript_data = {
+    'openai/gsm8k': 'transcripts/olmo7b_job9346_2026-03-29_22h56m53s',
+    'openai/gsm8k Malicious Agent 1': 'transcripts/olmo7b_job9343_2026-03-29_22h39m50s',
+    'openai/gsm8k Malicious Agent 3': 'transcripts/olmo7b_job9349_2026-03-29_23h03m15s',
 }
+dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", cw_round_figure=True)
 
-plot_round_statistics_comparison(datasets_data, "Qwen2.5-3B-Instruct")
-
-
-# # ------ Comparison between different datasets, Olmo, both --------
-olmo_answers_gsm8k, olmo_round_answers_gsm8k = extract_answers('transcripts/...')
-olmo_answers_mmlu, olmo_round_answers_mmlu = extract_answers('transcripts/...')
-olmo_answers_StrategyQA, olmo_round_answers_StrategyQA = extract_answers('transcripts/...')
-olmo_answers_bigbench, olmo_round_answers_bigbench = extract_answers('transcripts/...')
-
-# Calculate statistics for each
-stats_gsm8k_olmo = calculate_pattern_statistics(olmo_answers_gsm8k)
-stats_mmlu_olmo = calculate_pattern_statistics(olmo_answers_mmlu)
-stats_StrategyQA_olmo = calculate_pattern_statistics(olmo_answers_StrategyQA)
-stats_bigbench_olmo = calculate_pattern_statistics(olmo_answers_bigbench)
-
-# Create comparison plot
-datasets_data = {
-    'openai/gsm8k': stats_gsm8k_olmo,
-    'cais/mmlu': stats_mmlu_olmo,
-    'ChilleD/StrategyQA': stats_StrategyQA_olmo,
-    'tasksource/bigbench': stats_bigbench_olmo,
+# --- Malicious prompt comparison for Llama ---
+transcript_data = {
+    'openai/gsm8k': 'transcripts/llama3b_job9344_2026-03-29_22h39m48s',
+    'openai/gsm8k Malicious Agent 1': 'transcripts/llama3b_job9341_2026-03-29_22h39m50s',
+    'openai/gsm8k Malicious Agent 3': 'transcripts/llama3b_job9347_2026-03-29_23h00m21s',
 }
-
-plot_pattern_statistics_comparison(datasets_data, "Olmo-3-7B-Instruct dataset comparison")
-
-# Calculate round statistics for each
-round_stats_gsm8k_olmo = calculate_round_statistics(olmo_round_answers_gsm8k)
-round_stats_mmlu_olmo = calculate_round_statistics(olmo_round_answers_mmlu)
-round_stats_StrategyQA_olmo = calculate_round_statistics(olmo_round_answers_StrategyQA)
-round_stats_bigbench_olmo = calculate_round_statistics(olmo_round_answers_bigbench)
+dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", cw_round_figure=True)
 
 
-# Create comparison plot
-datasets_data = {
-    'openai/gsm8k': round_stats_gsm8k_olmo,
-    'cais/mmlu': round_stats_mmlu_olmo,
-    'ChilleD/StrategyQA': round_stats_StrategyQA_olmo,
-    'tasksource/bigbench': round_stats_bigbench_olmo
-}
+# # # ------ Comparison between different datasets, Olmo, both --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/olmo7b_2026-03-29_15h41m56s',
+#     'cais/mmlu': 'transcripts/olmo7b_2026-03-29_15h29m53s',
+#     'ChilleD/StrategyQA': 'transcripts/olmo7b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/olmo7b_2026-03-29_01h47m46s'
+# }
+# dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True)
 
-plot_round_statistics_comparison(datasets_data, "Olmo-3-7B-Instruct")
+# # --- share-mode comparison for Olmo ---
+# transcript_data = {
+#     'tasksource/bigbench both': 'transcripts/olmo7b_2026-03-29_01h47m46s',
+#     'tasksource/bigbench reasoning': 'transcripts/olmo7b_2026-03-29_21h37m22s',
+#     'tasksource/bigbench answer': 'transcripts/olmo7b_2026-03-29_21h46m31s'
+# }
 
-
-# ------ Comparison between different datasets; Llama, both --------
-llama_answers_gsm8k, llama_round_answers_gsm8k = extract_answers('transcripts/...')
-llama_answers_mmlu, llama_round_answers_mmlu = extract_answers('transcripts/...')
-llama_answers_StrategyQA, llama_round_answers_StrategyQA = extract_answers('transcripts/...')
-llama_answers_bigbench, llama_round_answers_bigbench = extract_answers('transcripts/...')
-
-
-# Calculate statistics for each
-stats_gsm8k_llama = calculate_pattern_statistics(llama_answers_gsm8k)
-stats_mmlu_llama = calculate_pattern_statistics(llama_answers_mmlu)
-stats_StrategyQA_llama = calculate_pattern_statistics(llama_answers_StrategyQA)
-stats_bigbench_llama = calculate_pattern_statistics(llama_answers_bigbench)
-
-print(stats_gsm8k_llama['num_tasks'])
-print(stats_mmlu_llama['num_tasks'])
-print(stats_StrategyQA_llama['num_tasks'])
-print(stats_bigbench_llama['num_tasks'])
-
-# Create comparison plot
-datasets_data = {
-    'openai/gsm8k': stats_gsm8k_llama,
-    'cais/mmlu': stats_mmlu_llama,
-    'ChilleD/StrategyQA': stats_StrategyQA_llama,
-    'tasksource/bigbench': stats_bigbench_llama
-}
-
-plot_pattern_statistics_comparison(datasets_data, "Llama-3.2-3B-Instruct")
-
-# print(stats_gsm8k_llama['num_tasks'])
-# print(stats_mmlu_llama['num_tasks'])
-# print(stats_StrategyQA_llama['num_tasks'])
-# print(stats_bigbench_llama['num_tasks'])
-
-# Calculate round statistics for each
-round_stats_gsm8k_llama = calculate_round_statistics(llama_round_answers_gsm8k)
-round_stats_mmlu_llama = calculate_round_statistics(llama_round_answers_mmlu)
-round_stats_StrategyQA_llama = calculate_round_statistics(llama_round_answers_StrategyQA)
-round_stats_bigbench_llama = calculate_round_statistics(llama_round_answers_bigbench)
+# dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", share_mode="Comparison")
 
 
-# Create comparison plot
-datasets_data = {
-    'openai/gsm8k': round_stats_gsm8k_llama,
-    'cais/mmlu': round_stats_mmlu_llama,
-    'ChilleD/StrategyQA': round_stats_StrategyQA_llama,
-    'tasksource/bigbench': round_stats_bigbench_llama
-}
+# # ------ Comparison between different datasets; Llama, both --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/llama3b_2026-03-29_15h19m52s',
+#     'cais/mmlu': 'transcripts/llama3b_2026-03-29_00h34m49s',
+#     'ChilleD/StrategyQA': 'transcripts/llama3b_2026-03-29_15h21m49s',
+#     'tasksource/bigbench': 'transcripts/llama3b_2026-03-29_03h08m47s'
+# }
+# dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", round_figure=True)
 
-plot_round_statistics_comparison(datasets_data, "Llama-3.2-3B-Instruct")
+
+# # --- share-mode comparison for Llama ---
+# transcript_data = {
+#     'tasksource/bigbench both': 'transcripts/llama3b_2026-03-29_03h08m47s',
+#     'tasksource/bigbench reasoning': 'transcripts/llama3b_2026-03-29_21h37m45s',
+#     'tasksource/bigbench answer': 'transcripts/llama3b_2026-03-29_23h24m02s'
+# }
+
+# dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", share_mode="Comparison")
+
 
 # Test normalization function
-print(normalize_answer("1, 4"))
-print(normalize_answer("1,4"))
-print(normalize_answer("no"))
-print(normalize_answer("yes"))
-print(normalize_answer("false"))
-print(normalize_answer("False, true"))
-print(normalize_answer("It is implausible"))
-print(normalize_answer("(1,6)"))
-print(normalize_answer("(1, 6)"))
-print(normalize_answer("(x - 2)(x^2 + 4x + 5)"))
-print(normalize_answer("(x-2)(x^2+4x+5)"))
-print(normalize_answer("infinite, non abelian group"))
-print(normalize_answer("abelian group"))
+# print(normalize_answer("1, 4"))
+# print(normalize_answer("1,4"))
+# print(normalize_answer("no"))
+# print(normalize_answer("yes"))
+# print(normalize_answer("false"))
+# print(normalize_answer("False, true"))
+# print(normalize_answer("It is implausible"))
+# print(normalize_answer("(1,6)"))
+# print(normalize_answer("(1, 6)"))
+# print(normalize_answer("(x - 2)(x^2 + 4x + 5)"))
+# print(normalize_answer("(x-2)(x^2+4x+5)"))
+# print(normalize_answer("infinite, non abelian group"))
+# print(normalize_answer("abelian group"))
