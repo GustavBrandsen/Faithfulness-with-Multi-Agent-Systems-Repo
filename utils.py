@@ -100,9 +100,6 @@ def json_chat(messages: List[Dict[str, str]],
                 )
                 result = generate_text(prompt, model_name)
 
-                # ADD THIS LINE TO DEBUG
-                print(f"\n[DEBUG RAW OUTPUT from {model_name}]:\n{result}\n" + "-"*50)
-
                 json_content = extract_json(result)
                 if not json_content:
                     raise ValueError("No JSON content found")
