@@ -25,7 +25,7 @@ else:
 CONFIG = {
     "num_tasks": 1,
     "dataset": "openai/gsm8k", # "openai/gsm8k", "cais/mmlu", "ChilleD/StrategyQA", "tasksource/bigbench"
-    "num_agents": 3,
+    "num_agents": 1,
     "model_for_simulation": "Qwen/Qwen2.5-3B-Instruct", # "Qwen/Qwen2.5-3B-Instruct", "allenai/Olmo-3-7B-Instruct", "meta-llama/Llama-3.2-3B-Instruct"
     "num_rounds": 3,
     "num_duplications": 1,
