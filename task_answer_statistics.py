@@ -23,11 +23,6 @@ def normalize_answer(text: str) -> str:
             text = text.replace('(', '').replace(')', '')
             # # Normalize spacing around commas: "1 , 6" or "1, 6" → "1,6"
             # text = ','.join([part.strip() for part in text.split(',')])
-    
-        
-        # Normalize yes/no to true/false for consistency
-        text = re.sub(r'\byes\b', 'true', text)
-        text = re.sub(r'\bno\b', 'false', text)
         
         return text
     
@@ -553,75 +548,109 @@ def dataset_comparison(transcripts, model_name, round_figure=False, share_mode='
 
 
 
-# ------ Comparison between different datasets, QWEN, both --------
-transcript_data = {
-    'openai/gsm8k': 'transcripts/qwen3b_2026-03-29_00h31m15s',
-    'cais/mmlu': 'transcripts/qwen3b_2026-03-29_15h34m56s',
-    'ChilleD/StrategyQA': 'transcripts/qwen3b_2026-03-29_15h26m25s',
-    'tasksource/bigbench': 'transcripts/qwen3b_2026-03-29_03h35m18s'
-}
-dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True)
+# ------ Comparison between different datasets, QWEN, both, MAS --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/qwen3b_2026-03-29_00h31m15s',
+#     'cais/mmlu': 'transcripts/qwen3b_2026-03-29_15h34m56s',
+#     'ChilleD/StrategyQA': 'transcripts/qwen3b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/qwen3b_2026-03-29_03h35m18s'
+# }
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True)
 
 # --- share-mode comparison for Qwen ---
 transcript_data = {
-    'tasksource/bigbench both': 'transcripts/qwen3b_2026-03-29_03h35m18s',
-    'tasksource/bigbench reasoning': 'transcripts/qwen3b_2026-03-29_21h37m18s',
-    'tasksource/bigbench answer': 'transcripts/qwen3b_2026-03-29_21h46m31s'
+    'openai/gsm8k both': 'transcripts/qwen3b_2026-03-29_00h31m15s',
+    'openai/gsm8k reasoning': 'transcripts/qwen3b_job9706_2026-03-30_22h01m46s',
+    'openai/gsm8k answer': 'transcripts/qwen3b_job9705_2026-03-30_21h58m14s'
 }
 
 dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", share_mode="Comparison")
 
+# transcript_data = {
+#     'tasksource/bigbench both': 'transcripts/qwen3b_2026-03-29_03h35m18s',
+#     'tasksource/bigbench reasoning': 'transcripts/qwen3b_2026-03-29_21h37m18s',
+#     'tasksource/bigbench answer': 'transcripts/qwen3b_2026-03-29_21h46m31s'
+# }
 
-# # ------ Comparison between different datasets, Olmo, both --------
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", share_mode="Comparison")
+
+# ------ Comparison between different datasets, QWEN, both, SAS --------
 transcript_data = {
-    'openai/gsm8k': 'transcripts/olmo7b_2026-03-29_15h41m56s',
-    'cais/mmlu': 'transcripts/olmo7b_2026-03-29_15h29m53s',
-    'ChilleD/StrategyQA': 'transcripts/olmo7b_2026-03-29_15h26m25s',
-    'tasksource/bigbench': 'transcripts/olmo7b_2026-03-29_01h47m46s'
+    'openai/gsm8k': 'transcripts/qwen3b_job9712_2026-03-30_22h08m41s',
+    'cais/mmlu': 'transcripts/qwen3b_job9713_2026-03-30_22h10m26s',
+    'ChilleD/StrategyQA': 'transcripts/qwen3b_job9714_2026-03-30_22h12m15s',
+    'tasksource/bigbench': 'transcripts/qwen3b_job9715_2026-03-30_22h13m45s'
 }
-dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True)
+dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True, system="SAS", num_agents=1)
+
+
+# ------ Comparison between different datasets, Olmo, both --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/olmo7b_2026-03-29_15h41m56s',
+#     'cais/mmlu': 'transcripts/olmo7b_2026-03-29_15h29m53s',
+#     'ChilleD/StrategyQA': 'transcripts/olmo7b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/olmo7b_2026-03-29_01h47m46s'
+# }
+# dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True)
 
 # --- share-mode comparison for Olmo ---
 transcript_data = {
-    'tasksource/bigbench both': 'transcripts/olmo7b_2026-03-29_01h47m46s',
-    'tasksource/bigbench reasoning': 'transcripts/olmo7b_2026-03-29_21h37m22s',
-    'tasksource/bigbench answer': 'transcripts/olmo7b_2026-03-29_21h46m31s'
+    'openai/gsm8k both': 'transcripts/olmo7b_2026-03-29_15h41m56s',
+    'openai/gsm8k reasoning': 'transcripts/olmo7b_job9707_2026-03-30_22h03m38s',
+    'openai/gsm8k answer': 'transcripts/olmo7b_job9711_2026-03-30_22h06m10s'
 }
 
 dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", share_mode="Comparison")
 
+# transcript_data = {
+#     'tasksource/bigbench both': 'transcripts/olmo7b_2026-03-29_01h47m46s',
+#     'tasksource/bigbench reasoning': 'transcripts/olmo7b_2026-03-29_21h37m22s',
+#     'tasksource/bigbench answer': 'transcripts/olmo7b_2026-03-29_21h46m31s'
+# }
+
+# dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", share_mode="Comparison")
+
 
 # ------ Comparison between different datasets; Llama, both --------
-transcript_data = {
-    'openai/gsm8k': 'transcripts/llama3b_2026-03-29_15h19m52s',
-    'cais/mmlu': 'transcripts/llama3b_2026-03-29_00h34m49s',
-    'ChilleD/StrategyQA': 'transcripts/llama3b_2026-03-29_15h21m49s',
-    'tasksource/bigbench': 'transcripts/llama3b_2026-03-29_03h08m47s'
-}
-dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", round_figure=True)
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/llama3b_2026-03-29_15h19m52s',
+#     'cais/mmlu': 'transcripts/llama3b_2026-03-29_00h34m49s',
+#     'ChilleD/StrategyQA': 'transcripts/llama3b_2026-03-29_15h21m49s',
+#     'tasksource/bigbench': 'transcripts/llama3b_2026-03-29_03h08m47s'
+# }
+# dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", round_figure=True)
 
 
 # --- share-mode comparison for Llama ---
 transcript_data = {
-    'tasksource/bigbench both': 'transcripts/llama3b_2026-03-29_03h08m47s',
-    'tasksource/bigbench reasoning': 'transcripts/llama3b_2026-03-29_21h37m45s',
-    'tasksource/bigbench answer': 'transcripts/llama3b_2026-03-29_23h24m02s'
+    'openai/gsm8k both': 'transcripts/llama3b_2026-03-29_15h19m52s',
+    'openai/gsm8k reasoning': 'transcripts/llama3b_job9703_2026-03-30_21h56m07s',
+    'openai/gsm8k answer': 'transcripts/llama3b_job9704_2026-03-30_21h57m33s'
 }
 
 dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", share_mode="Comparison")
 
+# transcript_data = {
+#     'tasksource/bigbench both': 'transcripts/llama3b_2026-03-29_03h08m47s',
+#     'tasksource/bigbench reasoning': 'transcripts/llama3b_2026-03-29_21h37m45s',
+#     'tasksource/bigbench answer': 'transcripts/llama3b_2026-03-29_23h24m02s'
+# }
+
+# dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", share_mode="Comparison")
+
+
 
 # Test normalization function
-print(normalize_answer("1, 4"))
-print(normalize_answer("1,4"))
-print(normalize_answer("no"))
-print(normalize_answer("yes"))
-print(normalize_answer("false"))
-print(normalize_answer("False, true"))
-print(normalize_answer("It is implausible"))
-print(normalize_answer("(1,6)"))
-print(normalize_answer("(1, 6)"))
-print(normalize_answer("(x - 2)(x^2 + 4x + 5)"))
-print(normalize_answer("(x-2)(x^2+4x+5)"))
-print(normalize_answer("infinite, non abelian group"))
-print(normalize_answer("abelian group"))
+# print(normalize_answer("1, 4"))
+# print(normalize_answer("1,4"))
+# print(normalize_answer("no"))
+# print(normalize_answer("yes"))
+# print(normalize_answer("false"))
+# print(normalize_answer("False, true"))
+# print(normalize_answer("It is implausible"))
+# print(normalize_answer("(1,6)"))
+# print(normalize_answer("(1, 6)"))
+# print(normalize_answer("(x - 2)(x^2 + 4x + 5)"))
+# print(normalize_answer("(x-2)(x^2+4x+5)"))
+# print(normalize_answer("infinite, non abelian group"))
+# print(normalize_answer("abelian group"))
