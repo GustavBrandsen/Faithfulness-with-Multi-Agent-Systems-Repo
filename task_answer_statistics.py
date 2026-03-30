@@ -23,11 +23,6 @@ def normalize_answer(text: str) -> str:
             text = text.replace('(', '').replace(')', '')
             # # Normalize spacing around commas: "1 , 6" or "1, 6" → "1,6"
             # text = ','.join([part.strip() for part in text.split(',')])
-    
-        
-        # Normalize yes/no to true/false for consistency
-        text = re.sub(r'\byes\b', 'true', text)
-        text = re.sub(r'\bno\b', 'false', text)
         
         return text
     
@@ -722,7 +717,7 @@ def dataset_comparison(transcripts, model_name, round_figure=False, cw_round_fig
 
 
 
-# # ------ Comparison between different datasets, QWEN, both --------
+# ------ Comparison between different datasets, QWEN, both, MAS --------
 # transcript_data = {
 #     'openai/gsm8k': 'transcripts/qwen3b_2026-03-29_00h31m15s',
 #     'cais/mmlu': 'transcripts/qwen3b_2026-03-29_15h34m56s',
@@ -732,6 +727,14 @@ def dataset_comparison(transcripts, model_name, round_figure=False, cw_round_fig
 # dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True)
 
 # # --- share-mode comparison for Qwen ---
+transcript_data = {
+    'openai/gsm8k both': 'transcripts/qwen3b_2026-03-29_00h31m15s',
+    'openai/gsm8k reasoning': 'transcripts/qwen3b_job9706_2026-03-30_22h01m46s',
+    'openai/gsm8k answer': 'transcripts/qwen3b_job9705_2026-03-30_21h58m14s'
+}
+
+dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", share_mode="Comparison")
+
 # transcript_data = {
 #     'tasksource/bigbench both': 'transcripts/qwen3b_2026-03-29_03h35m18s',
 #     'tasksource/bigbench reasoning': 'transcripts/qwen3b_2026-03-29_21h37m18s',
@@ -748,7 +751,8 @@ transcript_data = {
 }
 dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", cw_round_figure=True)
 
-# # # ------ Comparison between different datasets, Olmo, both --------
+
+# # ------ Comparison between different datasets, Olmo, both --------
 # transcript_data = {
 #     'openai/gsm8k': 'transcripts/olmo7b_2026-03-29_15h41m56s',
 #     'cais/mmlu': 'transcripts/olmo7b_2026-03-29_15h29m53s',
@@ -774,7 +778,8 @@ transcript_data = {
 }
 dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", cw_round_figure=True)
 
-# # ------ Comparison between different datasets; Llama, both --------
+
+# ------ Comparison between different datasets; Llama, both --------
 # transcript_data = {
 #     'openai/gsm8k': 'transcripts/llama3b_2026-03-29_15h19m52s',
 #     'cais/mmlu': 'transcripts/llama3b_2026-03-29_00h34m49s',
