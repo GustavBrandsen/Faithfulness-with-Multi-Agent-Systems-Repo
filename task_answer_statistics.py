@@ -71,12 +71,11 @@ def extract_answers(file_path, num_agents=3, num_rounds=3):
             person_round = re.split(r'\n\s*(?=Person \d+:)', rounds[round_num - 1])
             person_round = [pr for pr in person_round if pr.startswith("Person")]
             person_round_answer = []
-
-
+        
             for agent_num in range(1, num_agents + 1):
                 round_answer = re.findall(round_answer_regex, person_round[agent_num - 1])
                 person_round_answer.append(normalize_answer(round_answer[0]) if round_answer else '')
-            
+                
             
             rounds_a[round_num] = person_round_answer
         
@@ -598,12 +597,12 @@ def dataset_comparison(transcripts, model_name, round_figure=False, dataset_file
  
     for dataset_name, transcript_path in transcripts.items():
         # Extract answers for each dataset
-        answers, round_answers = extract_answers(transcript_path)
+        answers, round_answers = extract_answers(transcript_path, num_agents, rounds)
 
         # Calculate statistics for each dataset
         stats = calculate_pattern_statistics(answers)
         if round_figure:
-            round_stats = calculate_round_statistics(round_answers, num_agents=num_agents, rounds=rounds)
+            round_stats = calculate_round_statistics(round_answers, num_agents, rounds)
             datasets_data_round[dataset_name] = round_stats
         # Store statistics for comparison
         datasets_data[dataset_name] = stats
@@ -617,62 +616,85 @@ def dataset_comparison(transcripts, model_name, round_figure=False, dataset_file
 # ╚════════════════════════════════════════╝
 
 # ------ Comparison between different datasets, QWEN, both, MAS --------
-transcript_data = {
-    'openai/gsm8k': 'transcripts/qwen3b_2026-03-29_00h31m15s',
-    'cais/mmlu': 'transcripts/qwen3b_2026-03-29_15h34m56s',
-    'ChilleD/StrategyQA': 'transcripts/qwen3b_2026-03-29_15h26m25s',
-    'tasksource/bigbench': 'transcripts/qwen3b_2026-03-29_03h35m18s'
-}
-dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True)
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/qwen3b_2026-03-29_00h31m15s',
+#     'cais/mmlu': 'transcripts/qwen3b_2026-03-29_15h34m56s',
+#     'ChilleD/StrategyQA': 'transcripts/qwen3b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/qwen3b_2026-03-29_03h35m18s'
+# }
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True)
 
-# ------ Comparison between different datasets, Olmo, both --------
-transcript_data = {
-    'openai/gsm8k': 'transcripts/olmo7b_2026-03-29_15h41m56s',
-    'cais/mmlu': 'transcripts/olmo7b_2026-03-29_15h29m53s',
-    'ChilleD/StrategyQA': 'transcripts/olmo7b_2026-03-29_15h26m25s',
-    'tasksource/bigbench': 'transcripts/olmo7b_2026-03-29_01h47m46s'
-}
-dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True)
+# # ------ Comparison between different datasets, Olmo, both --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
+#     'cais/mmlu': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
+#     'ChilleD/StrategyQA': 'transcripts/MAS/both/olmo7b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s'
+# }
+# dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True)
 
-# ------ Comparison between different datasets, Llama, both --------
-transcript_data = {
-    'openai/gsm8k': 'transcripts/llama3b_2026-03-29_15h19m52s',
-    'cais/mmlu': 'transcripts/llama3b_2026-03-29_00h34m49s',
-    'ChilleD/StrategyQA': 'transcripts/llama3b_2026-03-29_15h21m49s',
-    'tasksource/bigbench': 'transcripts/llama3b_2026-03-29_03h08m47s'
-}
-dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", round_figure=True)
+# # ------ Comparison between different datasets, Llama, both --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
+#     'cais/mmlu': 'transcripts/MAS/both/llama3b_2026-03-29_00h34m49s',
+#     'ChilleD/StrategyQA': 'transcripts/MAS/both/llama3b_2026-03-29_15h21m49s',
+#     'tasksource/bigbench': 'transcripts/MAS/both/llama3b_2026-03-29_03h08m47s'
+# }
+# dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", round_figure=True)
 
 # ------ Comparison between different datasets, QWEN, both, SAS --------
-transcript_data = {
-    'openai/gsm8k': 'transcripts/qwen3b_job9712_2026-03-30_22h08m41s',
-    'cais/mmlu': 'transcripts/qwen3b_job9713_2026-03-30_22h10m26s',
-    'ChilleD/StrategyQA': 'transcripts/qwen3b_job9714_2026-03-30_22h12m15s',
-    'tasksource/bigbench': 'transcripts/qwen3b_job9715_2026-03-30_22h13m45s'
-}
-dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True, system="SAS")
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/SAS/both/qwen3b_job9712_2026-03-30_22h08m41s',
+#     'cais/mmlu': 'transcripts/SAS/both/qwen3b_job9713_2026-03-30_22h10m26s',
+#     'ChilleD/StrategyQA': 'transcripts/SAS/both/qwen3b_job9714_2026-03-30_22h12m15s',
+#     'tasksource/bigbench': 'transcripts/SAS/both/qwen3b_job9715_2026-03-30_22h13m45s'
+# }
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", round_figure=True, system="SAS", num_agents=1)
 
-# ------ Comparison between different datasets, Olmo, both --------
-transcript_data = {
-    'openai/gsm8k': 'transcripts/olmo7b_job9749_2026-03-31_00h58m55s',
-    'cais/mmlu': 'transcripts/olmo7b_job9750_2026-03-31_00h59m14s',
-    'ChilleD/StrategyQA': 'transcripts/olmo7b_job9751_2026-03-31_00h59m43s',
-    'tasksource/bigbench': 'transcripts/...'
-}
-dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True, system="SAS")
+# # ------ Comparison between different datasets, Olmo, both, SAS --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/SAS/both/olmo7b_job9749_2026-03-31_00h58m55s',
+#     'cais/mmlu': 'transcripts/SAS/both/olmo7b_job9750_2026-03-31_00h59m14s',
+#     'ChilleD/StrategyQA': 'transcripts/SAS/both/olmo7b_job9751_2026-03-31_00h59m43s',
+#     'tasksource/bigbench': 'transcripts/SAS/both/olmo7b_job9790_2026-03-31_09h14m42s'
+# }
+# dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True, system="SAS", num_agents=1)
+
+# # ------ Comparison between different datasets, llama, both, SAS --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/SAS/both/llama3b_job9794_2026-03-31_09h18m03s',
+#     'cais/mmlu': 'transcripts/SAS/both/llama3b_job9793_2026-03-31_09h18m03s',
+#     'ChilleD/StrategyQA': 'transcripts/SAS/both/llama3b_job9792_2026-03-31_09h16m56s',
+#     'tasksource/bigbench': 'transcripts/SAS/both/llama3b_job9791_2026-03-31_09h16m39s'
+# }
+# dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", round_figure=True, system="SAS", num_agents=1)
 
 
 # ╔════════════════════════════════════════╗
 # ║         SHARE-MODE COMPARISONS         ║
 # ╚════════════════════════════════════════╝
 
-# # --- share-mode comparison for Qwen ---
+# --- share-mode comparison for Qwen ---
 # transcript_data = {
 #     'openai/gsm8k: Both Share-mode': 'transcripts/qwen3b_2026-03-29_00h31m15s',
 #     'openai/gsm8k: Reasoning Share-mode': 'transcripts/qwen3b_job9706_2026-03-30_22h01m46s',
 #     'openai/gsm8k: Answer Share-mode': 'transcripts/qwen3b_job9705_2026-03-30_21h58m14s'
 # }
 # dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", dataset_filename="gsm8k", share_mode="Comparison")
+
+# transcript_data = {
+#     'cais/mmlu: Both Share-mode': 'transcripts/qwen3b_2026-03-29_15h34m56s',
+#     'cais/mmlu: Reasoning Share-mode': 'transcripts/qwen3b_job9913_2026-03-31_11h56m29s',
+#     'cais/mmlu: Answer Share-mode': 'transcripts/qwen3b_job9914_2026-03-31_11h56m37s'
+# }
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", dataset_filename="mmlu", share_mode="Comparison")
+
+# transcript_data = {
+#     'ChilleD/StrategyQA: Both Share-mode': 'transcripts/qwen3b_2026-03-29_15h26m25s',
+#     'ChilleD/StrategyQA: Reasoning Share-mode': 'transcripts/qwen3b_job9917_2026-03-31_12h00m28s',
+#     'ChilleD/StrategyQA: Answer Share-mode': 'transcripts/qwen3b_job9918_2026-03-31_17h05m39s'
+# }
+# dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", dataset_filename="StrategyQA", share_mode="Comparison")
 
 # transcript_data = {
 #     'tasksource/bigbench both': 'transcripts/qwen3b_2026-03-29_03h35m18s',
@@ -682,18 +704,60 @@ dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True, sys
 # dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", dataset_filename="sport", share_mode="Comparison")
 
 # # --- share-mode comparison for Olmo ---
+transcript_data = {
+    'openai/gsm8k: Both Share-mode': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
+    'openai/gsm8k: Reasoning Share-mode': 'transcripts/olmo7b_job125_2026-03-31_19h35m18s',
+    'openai/gsm8k: Answer Share-mode': 'transcripts/olmo7b_job126_2026-03-31_19h41m31s'
+}
+dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", dataset_filename="gsm8k", share_mode="Comparison")
+
+transcript_data = {
+    'cais/mmlu: Both Share-mode': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
+    'cais/mmlu: Reasoning Share-mode': 'transcripts/olmo7b_job123_2026-03-31_19h08m02s',
+    'cais/mmlu: Answer Share-mode': 'transcripts/olmo7b_job124_2026-03-31_19h08m18s'
+}
+dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", dataset_filename="mmlu", share_mode="Comparison")
+
 # transcript_data = {
-#     'tasksource/bigbench: Both Share-mode': 'transcripts/olmo7b_2026-03-29_01h47m46s',
+#     'ChilleD/StrategyQA: Both Share-mode': 'transcripts/MAS/both/olmo7b_2026-03-29_15h26m25s',
+#     'ChilleD/StrategyQA: Reasoning Share-mode': 'transcripts/olmo7b_job9972_2026-03-31_17h42m46s',
+#     'ChilleD/StrategyQA: Answer Share-mode': 'transcripts/olmo7b_job9973_2026-03-31_18h08m36s'
+# }
+# dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", dataset_filename="StrategyQA", share_mode="Comparison")
+
+# transcript_data = {
+#     'tasksource/bigbench: Both Share-mode': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s',
 #     'tasksource/bigbench: Reasoning Share-mode': 'transcripts/olmo7b_2026-03-29_21h37m22s',
 #     'tasksource/bigbench: Answer Share-mode': 'transcripts/olmo7b_2026-03-29_21h46m31s'
 # }
 # dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", dataset_filename="sport", share_mode="Comparison")
 
 # # --- share-mode comparison for Llama ---
+transcript_data = {
+    'openai/gsm8k: Both Share-mode': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
+    'openai/gsm8k: Reasoning Share-mode': 'transcripts/MAS/reasoning/llama3b_job9703_2026-03-30_21h56m07s',
+    'openai/gsm8k: Answer Share-mode': 'transcripts/MAS/answer/llama3b_job9704_2026-03-30_21h57m33s'
+}
+dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", dataset_filename="gsm8k", share_mode="Comparison")
+
+transcript_data = {
+    'cais/mmlu: Both Share-mode': 'transcripts/MAS/both/llama3b_2026-03-29_00h34m49s',
+    'cais/mmlu: Reasoning Share-mode': 'transcripts/348',
+    'cais/mmlu: Answer Share-mode': 'transcripts/349'
+}
+dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", dataset_filename="mmlu", share_mode="Comparison")
+
+transcript_data = {
+    'ChilleD/StrategyQA: Both Share-mode': 'transcripts/MAS/both/llama3b_2026-03-29_15h21m49s',
+    'ChilleD/StrategyQA: Reasoning Share-mode': 'transcripts/350',
+    'ChilleD/StrategyQA: Answer Share-mode': 'transcripts/351'
+}
+dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", dataset_filename="StrategyQA", share_mode="Comparison")
+
 # transcript_data = {
-#     'tasksource/bigbench: Both Share-mode': 'transcripts/llama3b_2026-03-29_03h08m47s',
-#     'tasksource/bigbench: Reasoning Share-mode': 'transcripts/llama3b_2026-03-29_21h37m45s',
-#     'tasksource/bigbench: Answer Share-mode': 'transcripts/llama3b_2026-03-29_23h24m02s'
+#     'tasksource/bigbench: Both Share-mode': 'transcripts/MAS/both/llama3b_2026-03-29_03h08m47s',
+#     'tasksource/bigbench: Reasoning Share-mode': 'transcripts/MAS/reasoning/llama3b_2026-03-29_21h37m45s',
+#     'tasksource/bigbench: Answer Share-mode': 'transcripts/MAS/answer/llama3b_2026-03-29_23h24m02s'
 # }
 # dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", dataset_filename="sport", share_mode="Comparison")
 
@@ -721,9 +785,9 @@ dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", round_figure=True, sys
 
 # # --- Malicious prompt comparison for Llama ---
 # transcript_data = {
-#     'openai/gsm8k: No Malicious Agent': 'transcripts/llama3b_job9344_2026-03-29_22h39m48s',
-#     'openai/gsm8k: Malicious Agent 1': 'transcripts/llama3b_job9341_2026-03-29_22h39m50s',
-#     'openai/gsm8k: Malicious Agent 3': 'transcripts/llama3b_job9347_2026-03-29_23h00m21s',
+#     'openai/gsm8k: No Malicious Agent': 'transcripts/MAS/malicious/llama3b_job9344_2026-03-29_22h39m48s',
+#     'openai/gsm8k: Malicious Agent 1': 'transcripts/MAS/malicious/llama3b_job9341_2026-03-29_22h39m50s',
+#     'openai/gsm8k: Malicious Agent 3': 'transcripts/MAS/malicious/llama3b_job9347_2026-03-29_23h00m21s',
 # }
 # dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", dataset_filename="gsm8k", round_figure=True, malicious_comparison=True)
 
