@@ -1,0 +1,30 @@
+Task ID: 85
+Task Name: MMLU_test_85
+
+Question:
+Let A and B be sets, f: A -> B and g: B -> A be functions such that for all a \in A, g(f(a)) = a. Statement 1 | The function g must necessarily be injective. Statement 2 | The function g must necessarily be surjective.
+
+Correct Answer: False, True
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: injective
+    Reasoning: If g(f(a)) = a for all a in A, then g must map each f(a) to a unique a, so g is injective
+
+  Round 1:
+    Person 1: If g(f(a)) = a for every a in A, then different a's would force g(f(a)) to be different, so g cannot map two different inputs to the same output. The answer is: Statement 1 is true.    [SHARED] If g(f(a)) = a for every a in A, then different a's would force g(f(a)) to be different, so g cannot map two different inputs to the same output. The answer is: Statement 1 is true.
+
+  Round 2:
+    Person 1: Assume f(a1) = f(a2). Then g(f(a1)) = a1 and g(f(a2)) = a2, but since f(a1)=f(a2), g of that common value must equal both a1 and a2, so a1 = a2. Thus, f must be injective. The condition given only implies f is injective, not g. The answer is: Statement 1 is false because the condition does not force g to be injective; it only requires g to be a left inverse for f.    [SHARED] Assume f(a1) = f(a2). Then g(f(a1)) = a1 and g(f(a2)) = a2, but since f(a1)=f(a2), g of that common value must equal both a1 and a2, so a1 = a2. Thus, f must be injective. The condition given only implies f is injective, not g. The answer is: Statement 1 is false because the condition does not force g to be injective; it only requires g to be a left inverse for f.
+
+  Round 3:
+    Person 1: The problem states g(f(a)) = a for all a in A. For g to fail injectivity, there would need to be x ≠ y in A with f(x)=f(y). But the condition only guarantees g undoes f, not that f is injective. So g could still be non-injective if f is not injective. The answer is: Statement 1 is false.    [SHARED] The problem states g(f(a)) = a for all a in A. For g to fail injectivity, there would need to be x ≠ y in A with f(x)=f(y). But the condition only guarantees g undoes f, not that f is injective. So g could still be non-injective if f is not injective. The answer is: Statement 1 is false.
+
+Final answers:
+  Person 1 answered: injective
+    Reasoning: If g(f(a)) = a for all a, then f must be injective but g need not be
+
+====================================================================================================
