@@ -1,0 +1,30 @@
+Task ID: 79
+Task Name: MMLU_test_79
+
+Question:
+Statement 1 | For n > 1, the set {1,2, ..., n-1} is a group under multiplication modulo n. Statement 2 | There is an integer x such that 63x mod 100 = 1.
+
+Correct Answer: False, True
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: 63
+    Reasoning: Multiplication modulo n forms a group only if n is prime and the operation is on the nonzero residues, but 1 to n−1 under multiplication mod n is not closed (e.g., 2×2 mod 4 is 0). The group requirement fails for composite n. For mod 100, gcd(63,100)=1 so an inverse exists
+
+  Round 1:
+    Person 1: The set {1,2,…,n−1} is not closed under multiplication modulo n when n is composite, so it cannot be a group for n>1. Since 63 and 100 are coprime, 63 has an inverse modulo 100. The answer is: 63    [SHARED] The set {1,2,…,n−1} is not closed under multiplication modulo n when n is composite, so it cannot be a group for n>1. Since 63 and 100 are coprime, 63 has an inverse modulo 100. The answer is: 63
+
+  Round 2:
+    Person 1: The inverse of 63 modulo 100 is 37 because 63×37=2331≡1 mod100. The answer is: 37    [SHARED] The inverse of 63 modulo 100 is 37 because 63×37=2331≡1 mod100. The answer is: 37
+
+  Round 3:
+    Person 1: For Statement 2, the inverse of 63 mod100 exists but is not 63 itself. The answer is: no    [SHARED] For Statement 2, the inverse of 63 mod100 exists but is not 63 itself. The answer is: no
+
+Final answers:
+  Person 1 answered: 37
+    Reasoning: 63 is not its own inverse modulo 100 because 63×63≡49 mod100≠1
+
+====================================================================================================
