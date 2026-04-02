@@ -1,0 +1,44 @@
+Task ID: 31
+Task Name: MMLU_test_31
+
+Question:
+Statement 1 | If H is a subgroup of a group G and a belongs to G, then aH = Ha. Statement 2 | If H is normal of G and a belongs to G, then ah = ha for all h in H.
+
+Correct Answer: False, False
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: |G|
+    Reasoning: Assuming the question asks for the order of the subgroup H in G, multiplying |H| by the number of cosets (which equals |G|/|H|) gives |H|*(|G|/|H|) = |G|
+  Person 2 answered: true
+    Reasoning: If H is a subgroup of G and a is in G, the product aH and Ha are both the set {ah: h in H}, so they are equal by definition of subgroup
+  Person 3 answered: true
+    Reasoning: If H is a subgroup of G and a is in G, the product aH and Ha are both the set {ah: h in H}, so they are equal by definition of subgroup
+
+  Round 1:
+    Person 1: If every left coset of H in G has the same size as every right coset, then the equation aH = Ha implies H is normal, so the group order must be equal on both sides. The answer is: |G|    [SHARED] If every left coset of H in G has the same size as every right coset, then the equation aH = Ha implies H is normal, so the group order must be equal on both sides. The answer is: |G|
+    Person 2: If aH and Ha are sets of the form {ah, h a for h in H}, they contain the same elements when H is a subgroup. The equality aH = Ha is the definition of a subgroup. This condition does not specify anything about normality. The answer is: false    [SHARED] If aH and Ha are sets of the form {ah, h a for h in H}, they contain the same elements when H is a subgroup. The equality aH = Ha is the definition of a subgroup. This condition does not specify anything about normality. The answer is: false
+    Person 3: If aH = Ha for all a in G, then H is normal in G. The answer is: true    [SHARED] If aH = Ha for all a in G, then H is normal in G. The answer is: true
+
+  Round 2:
+    Person 1: For any a in G, if aH = Ha, then the group operation is commutative, so G must be abelian. The answer is: G is abelian.    [SHARED] For any a in G, if aH = Ha, then the group operation is commutative, so G must be abelian. The answer is: G is abelian.
+    Person 2: The condition aH = Ha for all a in G requires that each left coset equals the corresponding right coset. This is equivalent to saying conjugation by a leaves H invariant for every a. Such invariance under all elements means H is normal in G. The answer is: H is normal in G.    [SHARED] The condition aH = Ha for all a in G requires that each left coset equals the corresponding right coset. This is equivalent to saying conjugation by a leaves H invariant for every a. Such invariance under all elements means H is normal in G. The answer is: H is normal in G.
+    Person 3: The condition aH = Ha for all a in G means conjugation by a maps H onto itself. This holds for every a only if H is normal in G. The answer is: H is normal in G.    [SHARED] The condition aH = Ha for all a in G means conjugation by a maps H onto itself. This holds for every a only if H is normal in G. The answer is: H is normal in G.
+
+  Round 3:
+    Person 1: The equation aH = Ha for all a in G means the group operation commutes with all subgroups. Since this holds universally, G itself must be abelian. The answer is: G is abelian.    [SHARED] The equation aH = Ha for all a in G means the group operation commutes with all subgroups. Since this holds universally, G itself must be abelian. The answer is: G is abelian.
+    Person 2: If aH = Ha for all a in G, then G acts by conjugation fixing H. This is the definition of normality of H in G. The answer is: H is normal in G.    [SHARED] If aH = Ha for all a in G, then G acts by conjugation fixing H. This is the definition of normality of H in G. The answer is: H is normal in G.
+    Person 3: If aH = Ha for every a in G, H is invariant under conjugation by all elements of G. The answer is: H is a normal subgroup of G.    [SHARED] If aH = Ha for every a in G, H is invariant under conjugation by all elements of G. The answer is: H is a normal subgroup of G.
+
+Final answers:
+  Person 1 answered: |G|
+    Reasoning: If aH = Ha for all a in G, then the group is symmetric, so the order of H is |G|
+  Person 2 answered: H is normal in G
+    Reasoning: If aH = Ha for all a in G, the set of left cosets equals the set of right cosets for H
+  Person 3 answered: H is normal in G.
+    Reasoning: If the condition aH = Ha holds for all a in G, this defines the subgroup H as normal in G
+
+====================================================================================================

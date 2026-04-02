@@ -1,0 +1,44 @@
+Task ID: 972
+Task Name: MMLU_test_972
+
+Question:
+The rotational correlation time of a spherical object of radius r immersed in a liquid with viscosity η is given by the Stokes equation: τc = 4πηr3/3kBT. A small molecule with relative molecular mass Mr = 100 in water at 298 K has τc = 50 ps. Assuming that Mr is proportional to the molecular volume, estimate τc for a small protein with Mr = 8400.
+
+Correct Answer: 4.2 ns
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: 13500
+    Reasoning: The correlation time scales with the cube of molecular volume, which is proportional to the cube of molecular mass
+  Person 2 answered: 13500
+    Reasoning: The correlation time scales with the cube of molecular volume, which is proportional to the cube of molecular mass
+  Person 3 answered: 13500
+    Reasoning: The correlation time scales with the cube of molecular volume, which is proportional to the cube of molecular mass
+
+  Round 1:
+    Person 1: The rotational correlation time is proportional to the cube of molecular mass. Given the correlation time for Mr = 100 is 50 ps, we scale by (Mr_new/Mr_old)^3 = (8400/100)^3 = 8.4³ ≈ 592.7. Multiplying 50 ps by 592.7 gives about 29,500 ps. The answer is: 29500    [SHARED] The answer is: 29500
+    Person 2: The cube of the molecular mass ratio (8400/100)^3 is 56. The correlation time scales with the cube of molecular mass, so τc for the protein is 50 ps × 56 = 2800 ps. The answer is: 2800    [SHARED] The answer is: 2800
+    Person 3: The rotational correlation time is proportional to the cube of molecular mass. To find the new τc, cube the ratio of the protein's Mr to the molecule's Mr and multiply by the original τc. The answer is: 135000.    [SHARED] The answer is: 135000.
+
+  Round 2:
+    Person 1: The correlation time scales with the cube of molecular mass. For Mr = 84 (dividing by 100 first), (84/100)³ × 50 ps ≈ 0.5927 × 50 ps ≈ 29.6 ps. The answer is: 30 ps (rounded to two significant figures)    [SHARED] The answer is: 30 ps (rounded to two significant figures)
+    Person 2: The ratio of the molecular masses cubed is (84)^3 = 592,704. Multiplying by the original τc gives 50 ps × 592.704 ≈ 29,535 ps. The answer is: 29,500    [SHARED] The answer is: 29,500
+    Person 3: The correlation time scales with the cube of molecular mass. Using the ratio (Mr_protein/Mr_molecule)³ × τc_initial gives the estimate. The answer is: 135 ps.    [SHARED] The answer is: 135 ps.
+
+  Round 3:
+    Person 1: The rotational correlation time depends on the cube of molecular mass ratio. Scaling 100 to 840 (Mr = 840), (840/100)³ = 0.84³ ≈ 0.5927. 0.5927 × 50 ps ≈ 29.4 ps. The answer is: 29 ps    [SHARED] The answer is: 29 ps
+    Person 2: The Stokes correlation time is proportional to (Mr)^3. For Mr = 84 (in units relative to 100), (84/100)^3 = 0.5927. Thus τc for the protein is 50 ps × 0.5927 ≈ 29.4 ps. The answer is: 29 ps    [SHARED] The answer is: 29 ps
+    Person 3: Rotational correlation time depends on (Mr)^(3/1) relative to the reference molecule. Multiply the reference τc by (Mr_protein/Mr_molecule)³. The answer is: 29 ps.    [SHARED] The answer is: 29 ps.
+
+Final answers:
+  Person 1 answered: 29
+    Reasoning: The Stokes correlation time scales as the cube of molecular mass. 84/100 cubed is 0.5927. 0.5927 × 50 ps ≈ 29.4 ps
+  Person 2 answered: 29 ps
+    Reasoning: The correlation time scales with the cube of molecular mass ratio. The mass ratio is 84/100. Cubing gives (84/100)^3 = 0.592704. Multiply by 50 ps to get 29.53 ps
+  Person 3 answered: 135000
+    Reasoning: Rotational correlation time is proportional to the cube of molecular mass. To estimate the protein's τc, cube its Mr ratio to the molecule's Mr and multiply by the given τc
+
+====================================================================================================
