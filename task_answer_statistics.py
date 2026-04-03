@@ -770,33 +770,33 @@ def dataset_comparison(transcripts, model_name, round_figure=False, dataset_file
 # --- Malicious prompt comparison for Qwen ---
 # transcript_data = {
 #     'tasksource/bigbench: No Mal Agent - both': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s',
-#     'tasksource/bigbench: Mal Agent 1 - both': 'final_transcripts/bigbench/qwen3b_job9921_2026-03-31_13h53m46s',
-#     'tasksource/bigbench: Mal Agent 3 - both': 'final_transcripts/bigbench/qwen3b_job9925_2026-03-31_16h22m36s',
+#     'tasksource/bigbench: Mal Agent 1 - both': 'transcripts/MAS/malicious/bigbench/qwen3b_job9921_2026-03-31_13h53m46s',
+#     'tasksource/bigbench: Mal Agent 3 - both': 'transcripts/MAS/malicious/bigbench/qwen3b_job9925_2026-03-31_16h22m36s',
 #     'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_2026-03-29_21h46m31s',
-#     'tasksource/bigbench: Mal Agent 1 - answer': 'final_transcripts/bigbench/qwen3b_job9929_2026-03-31_16h56m02s',
-#     'tasksource/bigbench: Mal Agent 3 - answer': 'final_transcripts/bigbench/qwen3b_job337_2026-04-01_01h00m42s',
+#     'tasksource/bigbench: Mal Agent 1 - answer': 'transcripts/MAS/malicious/bigbench/qwen3b_job9929_2026-03-31_16h56m02s',
+#     'tasksource/bigbench: Mal Agent 3 - answer': 'transcripts/MAS/malicious/bigbench/qwen3b_job337_2026-04-01_01h00m42s',
 # }
 # dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", dataset_filename="bigbench", round_figure=True, malicious_comparison=True)
 
 # # --- Malicious prompt comparison for Olmo ---
 # transcript_data = {
 #     'tasksource/bigbench: No Mal Agent - both': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s',
-#     'tasksource/bigbench: Mal Agent 1 - both': 'final_transcripts/bigbench/olmo7b_job9922_2026-03-31_15h39m15s',
-#     'tasksource/bigbench: Mal Agent 3 - both': 'final_transcripts/bigbench/olmo7b_job347_2026-04-01_03h38m14s',
+#     'tasksource/bigbench: Mal Agent 1 - both': 'transcripts/MAS/malicious/bigbench/olmo7b_job9922_2026-03-31_15h39m15s',
+#     'tasksource/bigbench: Mal Agent 3 - both': 'transcripts/MAS/malicious/bigbench/olmo7b_job347_2026-04-01_03h38m14s',
 #     'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job126_2026-03-31_19h41m31s',
-#     'tasksource/bigbench: Mal Agent 1 - answer': 'final_transcripts/bigbench/olmo7b_job9930_2026-03-31_16h57m17s',
-#     'tasksource/bigbench: Mal Agent 3 - answer': 'final_transcripts/bigbench/olmo7b_job338_2026-04-01_01h02m15s',
+#     'tasksource/bigbench: Mal Agent 1 - answer': 'transcripts/MAS/malicious/bigbench/olmo7b_job9930_2026-03-31_16h57m17s',
+#     'tasksource/bigbench: Mal Agent 3 - answer': 'transcripts/MAS/malicious/bigbench/olmo7b_job338_2026-04-01_01h02m15s',
 # }
 # dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", dataset_filename="bigbench", round_figure=True, malicious_comparison=True)
 
 # # --- Malicious prompt comparison for Llama ---
 # transcript_data = {
 #     'tasksource/bigbench: No Mal Agent - both': 'transcripts/MAS/both/llama3b_2026-03-29_03h08m47s',
-#     'tasksource/bigbench: Mal Agent 1 - both': 'final_transcripts/bigbench/llama3b_job9920_2026-03-31_12h08m05s',
-#     'tasksource/bigbench: Mal Agent 3 - both': 'final_transcripts/bigbench/llama3b_job9924_2026-03-31_16h17m31s',
+#     'tasksource/bigbench: Mal Agent 1 - both': 'transcripts/MAS/malicious/bigbench/llama3b_job9920_2026-03-31_12h08m05s',
+#     'tasksource/bigbench: Mal Agent 3 - both': 'transcripts/MAS/malicious/bigbench/llama3b_job9924_2026-03-31_16h17m31s',
 #     'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_2026-03-29_23h24m02s',
-#     'tasksource/bigbench: Mal Agent 1 - answer': 'final_transcripts/bigbench/llama3b_job9928_2026-03-31_16h55m27s',
-#     'tasksource/bigbench: Mal Agent 3 - answer': 'final_transcripts/bigbench/llama3b_job336_2026-04-01_01h00m20s',
+#     'tasksource/bigbench: Mal Agent 1 - answer': 'transcripts/MAS/malicious/bigbench/llama3b_job9928_2026-03-31_16h55m27s',
+#     'tasksource/bigbench: Mal Agent 3 - answer': 'transcripts/MAS/malicious/bigbench/llama3b_job336_2026-04-01_01h00m20s',
 # }
 # dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", dataset_filename="bigbench", round_figure=True, malicious_comparison=True)
 
@@ -804,33 +804,33 @@ def dataset_comparison(transcripts, model_name, round_figure=False, dataset_file
 # --- Malicious prompt comparison for Qwen ---
 transcript_data = {
     'openai/gsm8k: No Mal Agent - both': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
-    'openai/gsm8k: Mal Agent 1 - both': 'final_transcripts/gsm8k/qwen3b_job345_2026-04-01_01h35m32s',
-    'openai/gsm8k: Mal Agent 3 - both': 'final_transcripts/gsm8k/qwen3b_job342_2026-04-01_01h15m49s',
+    'openai/gsm8k: Mal Agent 1 - both': 'transcripts/MAS/malicious/gsm8k/qwen3b_job345_2026-04-01_01h35m32s',
+    'openai/gsm8k: Mal Agent 3 - both': 'transcripts/MAS/malicious/gsm8k/qwen3b_job342_2026-04-01_01h15m49s',
     'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_job9705_2026-03-30_21h58m14s',
-    'openai/gsm8k: Mal Agent 1 - answer': 'final_transcripts/gsm8k/qwen3b_job3963_2026-04-02_02h14m14s',
-    'openai/gsm8k: Mal Agent 3 - answer': 'final_transcripts/gsm8k/qwen3b_job3960_2026-04-01_16h46m12s',
+    'openai/gsm8k: Mal Agent 1 - answer': 'transcripts/MAS/malicious/gsm8k/qwen3b_job3963_2026-04-02_02h14m14s',
+    'openai/gsm8k: Mal Agent 3 - answer': 'transcripts/MAS/malicious/gsm8k/qwen3b_job3960_2026-04-01_16h46m12s',
 }
 dataset_comparison(transcript_data, "Qwen2.5-3B-Instruct", dataset_filename="gsm8k", round_figure=True, malicious_comparison=True)
 
 # --- Malicious prompt comparison for Olmo ---
 transcript_data = {
     'openai/gsm8k: No Mal Agent - both': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
-    'openai/gsm8k: Mal Agent 1 - both': 'final_transcripts/gsm8k/olmo7b_job346_2026-04-01_02h18m18s',
-    'openai/gsm8k: Mal Agent 3 - both': 'final_transcripts/gsm8k/olmo7b_job343_2026-04-01_01h15m49s',
+    'openai/gsm8k: Mal Agent 1 - both': 'transcripts/MAS/malicious/gsm8k/olmo7b_job346_2026-04-01_02h18m18s',
+    'openai/gsm8k: Mal Agent 3 - both': 'transcripts/MAS/malicious/gsm8k/olmo7b_job343_2026-04-01_01h15m49s',
     'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job126_2026-03-31_19h41m31s',
-    'openai/gsm8k: Mal Agent 1 - answer': 'final_transcripts/gsm8k/olmo7b_job3964_2026-04-02_04h05m45s',
-    'openai/gsm8k: Mal Agent 3 - answer': 'final_transcripts/gsm8k/olmo7b_job3961_2026-04-01_23h51m40s',
+    'openai/gsm8k: Mal Agent 1 - answer': 'transcripts/MAS/malicious/gsm8k/olmo7b_job3964_2026-04-02_04h05m45s',
+    'openai/gsm8k: Mal Agent 3 - answer': 'transcripts/MAS/malicious/gsm8k/olmo7b_job3961_2026-04-01_23h51m40s',
 }
 dataset_comparison(transcript_data, "Olmo-3-7B-Instruct", dataset_filename="gsm8k", round_figure=True, malicious_comparison=True)
 
 # --- Malicious prompt comparison for Llama ---
 transcript_data = {
     'openai/gsm8k: No Mal Agent - both': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
-    'openai/gsm8k: Mal Agent 1 - both': 'final_transcripts/gsm8k/llama3b_job344_2026-04-01_01h21m12s',
-    'openai/gsm8k: Mal Agent 3 - both': 'final_transcripts/gsm8k/llama3b_job341_2026-04-01_01h15m43s',
+    'openai/gsm8k: Mal Agent 1 - both': 'transcripts/MAS/malicious/gsm8k/llama3b_job344_2026-04-01_01h21m12s',
+    'openai/gsm8k: Mal Agent 3 - both': 'transcripts/MAS/malicious/gsm8k/llama3b_job341_2026-04-01_01h15m43s',
     'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_job9704_2026-03-30_21h57m33s',
-    # 'openai/gsm8k: Mal Agent 1 - answer': 'final_transcripts/gsm8k/llama3b_job3962_2026-04-02_01h48m51s',
-    'openai/gsm8k: Mal Agent 3 - answer': 'final_transcripts/gsm8k/llama3b_job3959_2026-04-01_15h52m13s',
+    # 'openai/gsm8k: Mal Agent 1 - answer': 'transcripts/MAS/malicious/gsm8k/llama3b_job3962_2026-04-02_01h48m51s',
+    'openai/gsm8k: Mal Agent 3 - answer': 'transcripts/MAS/malicious/gsm8k/llama3b_job3959_2026-04-01_15h52m13s',
 }
 dataset_comparison(transcript_data, "Llama-3.2-3B-Instruct", dataset_filename="gsm8k", round_figure=True, malicious_comparison=True)
 
