@@ -1,0 +1,44 @@
+Task ID: 100
+Task Name: MMLU_test_100
+
+Question:
+Statement 1 | Every ideal in a ring is a subring of the ring. Statement 2 | Every subring of every ring is an ideal of the ring.
+
+Correct Answer: True, False
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: true
+    Reasoning: An ideal contains elements closed under addition and ring multiplication by the ring's elements; a subring must also contain the ring's elements and be closed under addition and multiplication. The only subring satisfying this is the entire ring itself, which is an ideal
+  Person 2 answered: true
+    Reasoning: An ideal contains elements closed under addition and ring multiplication by the ring's elements; a subring must also contain the ring's elements and be closed under addition and multiplication. The only subring satisfying this is the entire ring itself, which is an ideal
+  Person 3 answered: 2
+    Reasoning: The ring is R and the ideal is (2)
+
+  Round 1:
+    Person 1: If the ring has unity, only the whole ring and the zero ideal qualify. The answer is: false    [SHARED] The answer is: false
+    Person 2: The only subring that includes all ring elements and is closed under the ring operations is the ring itself, which is an ideal. Other subrings may lack closure under multiplication by ring elements and thus aren't ideals. The answer is: false    [SHARED] The answer is: false
+    Person 3: Since every subring must contain the ring's identity element, and ideals always do, it follows that every subring is an ideal. The answer is: true    [SHARED] The answer is: true
+
+  Round 2:
+    Person 1: An ideal contains the ring's operation with its elements, while a general subring does not. Thus, not all subrings are ideals. The answer is: false    [SHARED] The answer is: false
+    Person 2: A subring must contain the identity (if the ring has one) and be closed under the ring operations. However, some subrings may not contain the identity or be closed under multiplication by all ring elements. The answer is: false    [SHARED] The answer is: false
+    Person 3: The definition of a subring requires only that it is closed under addition and multiplication within the larger ring, which is exactly what an ideal is. Therefore, any subring inherently satisfies the ideal conditions. The answer is: true.    [SHARED] The answer is: true.
+
+  Round 3:
+    Person 1: A subring must contain the identity (if it exists) and all ring operations, which is not required for an ideal. Therefore, not every subring is an ideal. The answer is: false    [SHARED] The answer is: false
+    Person 2: An ideal is defined by being closed under addition and multiplication by every element of the ring. Not all subrings have this property. The answer is: false    [SHARED] The answer is: false
+    Person 3: Subrings are formed by taking a subset that is closed under the ring operations, just like ideals. Ideals are subrings by definition, so the two statements are equivalent. The answer is: Statement 1 is true and Statement 2 is true.    [SHARED] The answer is: Statement 1 is true and Statement 2 is true.
+
+Final answers:
+  Person 1 answered: false
+    Reasoning: An ideal is defined by closure under ring multiplication and addition, which subrings may lack
+  Person 2 answered: false
+    Reasoning: If the ring has unity, not every subring contains it, so statement 1 is false. Statement 2 is also false because not every subring is closed under multiplication by all ring elements
+  Person 3 answered: true
+    Reasoning: If we assume all rings are commutative, then every subring inherits the ideal property automatically
+
+====================================================================================================
