@@ -1,0 +1,44 @@
+Task ID: 11
+Task Name: MMLU_test_11
+
+Question:
+Statement 1 | If H is a subgroup of G and a belongs to G then |aH| = |Ha|. Statement 2 | If H is a subgroup of G and a and b belong to G, then aH and Hb are identical or disjoint.
+
+Correct Answer: True, False
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: |H|
+    Reasoning: Assuming a is in H, aH equals H and Ha equals H so their orders are equal
+  Person 2 answered: |aH| = |Ha|
+    Reasoning: If H is a subgroup of G and a is in G, then the order of aH equals the order of Ha by Lagrange's theorem and subgroup coset definition
+  Person 3 answered: |aH| = |Ha|
+    Reasoning: If H is a subgroup of G and a is in G, then the order of aH equals the order of Ha by Lagrange's theorem and subgroup coset definition
+
+  Round 1:
+    Person 1: If every element in G acts trivially on H, then aH and Ha both equal H, so their orders must match. The answer is: |H|    [SHARED] The answer is: |H|
+    Person 2: If a is in H, then aH = H and Ha = H, so their orders are equal to |H|. The answer is: |H|    [SHARED] The answer is: |H|
+    Person 3: If a is in H, then aH = H and Ha = H, so their orders are both |H|. The answer is: |H|.    [SHARED] The answer is: |H|.
+
+  Round 2:
+    Person 1: Group theory dictates that conjugates of subgroups by elements within the group have the same order when the element normalizes the subgroup. Since H is a subgroup of G, for any a in G, aHa⁻¹ = H, so aH and Ha are both just H. Therefore, their orders are obviously equal. The answer is: |aH| = |Ha| for all a in G.    [SHARED] The answer is: |aH| = |Ha| for all a in G.
+    Person 2: If a is not in H, aH and Ha may have different orders. The answer is: |aH| = |aH||H/H ∩ ⟨a⟩| and |Ha| = |H|/|H ∩ a⁻¹H|, so they are not necessarily equal. The answer is: Not necessarily true.    [SHARED] The answer is: |aH| = |aH||H/H ∩ ⟨a⟩| and |Ha| = |H|/|H ∩ a⁻¹H|, so they are not necessarily equal.
+    Person 3: If a is not in H, aH and Ha are distinct cosets and their orders depend on the index, but may differ. The answer is: Not necessarily equal.    [SHARED] The answer is: Not necessarily equal.
+
+  Round 3:
+    Person 1: The order of aH depends only on the size of H, because multiplying a subgroup by an element doesn't change its cardinality. Similarly, Ha is just a relabeling of H, so it must also have order |H|. Any difference in notation is merely cosmetic and does not affect the group's order. The answer is: |aH| = |Ha| for all a in G.    [SHARED] The answer is: |aH| = |Ha| for all a in G.
+    Person 2: For any a in G, |aH| = |H| because left and right cosets have the same size when H is a subgroup. The answer is: True.    [SHARED] The answer is: True.
+    Person 3: For any a in G, aH and Ha are the same coset, so their orders are equal. The answer is: True.    [SHARED] The answer is: True.
+
+Final answers:
+  Person 1 answered: |H|
+    Reasoning: Since aH and Ha are both left cosets or right cosets of H in G, their sizes must coincide
+  Person 2 answered: |H|
+    Reasoning: If a is in H, aH and Ha are the same coset so their orders are equal to |H|
+  Person 3 answered: |H|
+    Reasoning: If aH and Ha are cosets of H in G, their orders are both |H| since they are the same set
+
+====================================================================================================
