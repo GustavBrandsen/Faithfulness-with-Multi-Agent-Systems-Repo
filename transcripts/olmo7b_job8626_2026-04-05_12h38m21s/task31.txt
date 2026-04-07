@@ -1,0 +1,44 @@
+Task ID: 31
+Task Name: MMLU_test_31
+
+Question:
+Statement 1 | If H is a subgroup of a group G and a belongs to G, then aH = Ha. Statement 2 | If H is normal of G and a belongs to G, then ah = ha for all h in H.
+
+Correct Answer: False, False
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: |G|
+    Reasoning: Assuming the question asks for the order of the subgroup H in G, multiplying |H| by the number of cosets (which equals |G|/|H|) gives |H|*(|G|/|H|) = |G|
+  Person 2 answered: |G|
+    Reasoning: Assuming the question asks for the order of the subgroup H in G, multiplying |H| by the number of cosets (which equals |G|/|H|) gives |H|*(|G|/|H|) = |G|
+  Person 3 answered: true
+    Reasoning: If H is a subgroup of G and a is in G, the product aH and Ha are both the set {ah: h in H}, so they are equal by definition of subgroup
+
+  Round 1:
+    Person 1: If every left coset of H in G has the same size as every right coset, then the equation aH = Ha implies H is normal, so the group order must be equal on both sides. The answer is: |G|    [SHARED] The answer is: |G|
+    Person 2: Every element in G can be written as a product involving aH and Ha. Since the problem equates aH = Ha, this forces all elements to equal the identity, so the answer must be the trivial group. The answer is: the trivial group.    [SHARED] The answer is: the trivial group.
+    Person 3: The definition of aH and Ha in group theory is the set of all elements a*h and h*a for h in H, which may or may not be equal depending on the group and the element a. The answer is: not necessarily true.    [SHARED] The answer is: not necessarily true.
+
+  Round 2:
+    Person 1: The definition of aH = Ha is precisely the condition for H to be a normal subgroup of G. Since the question asks about aH = Ha for arbitrary a in G, this can only hold if H is the whole group G. Any smaller subgroup would fail this for some a, so the only possible answer is G. The answer is: G    [SHARED] The answer is: G
+    Person 2: Every element of G is contained in both aH and Ha when H is a subgroup. Since sets are equal, the entire group G must be the same as aH. The answer is: G.    [SHARED] The answer is: G.
+    Person 3: If H is a subgroup of G and a is in G, then aH is a subset of G and, for the equality aH = Ha to hold for all a in G, H must be the entire group G. The answer is: G.    [SHARED] The answer is: G.
+
+  Round 3:
+    Person 1: The equation aH = Ha for all a in G is only possible when H is the entire group G. If H were a proper subgroup, there would exist some a where aH ≠ Ha, violating the condition. Therefore, the only possible answer is G. The answer is: G    [SHARED] The answer is: G
+    Person 2: The equation aH = Ha means every element in G is in both left and right coset. Therefore, G and aH must have the same size. The answer is: |G|.    [SHARED] The answer is: |G|.
+    Person 3: For aH to equal Ha for every a in G and all h in H, H must be normal in G. The answer is: H is a normal subgroup of G.    [SHARED] The answer is: H is a normal subgroup of G.
+
+Final answers:
+  Person 1 answered: G
+    Reasoning: If the group operation is commutative, then aH = Ha for all a and h, so the condition is always satisfied
+  Person 2 answered: |G|
+    Reasoning: Group elements are counted in both aH and Ha when H is a subgroup. Equating them gives the total number of elements in G
+  Person 3 answered: aH
+    Reasoning: If H is a subgroup of G and a is in G, aH and Ha are both left cosets of H containing a
+
+====================================================================================================
