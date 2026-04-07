@@ -568,12 +568,12 @@ def calculate_round_statistics(tasks_answers, skip_agents=[], original_task_answ
         malicious_final_answers = []  # Track original answers from skipped agents that changed
 
         if original_task_answers is not None and task_num in original_task_answers:
-            _, original_final_answers, _ = original_task_answers[task_num]
-
+            _, original_round_answers, _ = original_task_answers[task_num]
+       
             # First pass: identify if any malicious agent changed their answer
             # mal_agent_changes = []  # Track which malicious agents changed
             for agent_idx in skip_agents:
-                original_agent_final = original_final_answers[agent_idx]
+                original_agent_final = original_round_answers[rounds + 1][agent_idx]
                 current_agent_final = final_answer[agent_idx]
                 
                 if current_agent_final != original_agent_final:
@@ -1110,21 +1110,21 @@ def malicious_comparison(transcripts, round_figure=True):
 
 
 
-transcript_data = {
-    'openai/gsm8k No Malicious Agent': 'transcripts_mal_test/qwen3b_2026-03-29_00h31m15s',
-    'openai/gsm8k Malicious Agent 3': 'transcripts_mal_test/qwen3b_job342_2026-04-01_01h15m49s',
-    'openai/gsm8k No Malicious Agent again': 'transcripts_mal_test/qwen3b_2026-03-29_00h31m15s',
-    'openai/gsm8k Malicious Agent 2': 'transcripts_mal_test/qwen3b_job342_2026-04-01_01h15m49s'
-}
+# transcript_data = {
+#     'openai/gsm8k No Malicious Agent': 'transcripts_mal_test/qwen3b_2026-03-29_00h31m15s',
+#     'openai/gsm8k Malicious Agent 3': 'transcripts_mal_test/qwen3b_job342_2026-04-01_01h15m49s',
+#     'openai/gsm8k No Malicious Agent again': 'transcripts_mal_test/qwen3b_2026-03-29_00h31m15s',
+#     'openai/gsm8k Malicious Agent 2': 'transcripts_mal_test/qwen3b_job342_2026-04-01_01h15m49s'
+# }
 
-malicious_comparison(transcript_data, round_figure=True)
+# malicious_comparison(transcript_data, round_figure=True)
 # dataset_comparison(transcript_data, round_figure=True, comparison_type='malicious')
 
 # ╔════════════════════════════════════════╗
 # ║           DATASET COMPARISONS          ║
 # ╚════════════════════════════════════════╝
 
-# # ------ Comparison between different datasets, QWEN, both, MAS --------
+# ------ Comparison between different datasets, QWEN, both, MAS --------
 # transcript_data = {
 #     'openai/gsm8k': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
 #     'cais/mmlu': 'transcripts/MAS/both/qwen3b_2026-03-29_15h34m56s',
