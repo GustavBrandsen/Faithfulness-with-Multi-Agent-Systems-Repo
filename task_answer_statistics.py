@@ -186,11 +186,11 @@ def calculate_pattern_statistics(tasks_answers, skip_agents=[], original_task_an
     num_tasks = len(tasks_answers)
     missed_patterns = 0
     missed_patterns_dict = dict()
-    malicious_final_answers = []  # Track original answers from skipped agents that changed
+    # malicious_final_answers = []  # Track original answers from skipped agents that changed
     # num_agents = len(tasks_answers.items().__iter__().__next__()[1][0]) - len(skip_agents)  # Get number of agents from the first task's init_answer
 
     for task_num, (init_answer, final_answer, correct_answer) in tasks_answers.items():
-    
+        malicious_final_answers = []  # Track original answers from skipped agents that changed
         if original_task_answers is not None and task_num in original_task_answers:
             original_init_answers, original_final_answers, _ = original_task_answers[task_num]
 
@@ -199,8 +199,8 @@ def calculate_pattern_statistics(tasks_answers, skip_agents=[], original_task_an
             for agent_idx in skip_agents:
                 original_agent_final = original_final_answers[agent_idx]
                 current_agent_final = final_answer[agent_idx]
-                print(f"original_agent_final for agent {agent_idx + 1}, task {task_num}: {original_agent_final}")
-                print(f"current_agent_final for agent {agent_idx + 1}, task {task_num}: {current_agent_final}\n")
+                # print(f"original_agent_final for agent {agent_idx + 1}, task {task_num}: {original_agent_final}")
+                # print(f"current_agent_final for agent {agent_idx + 1}, task {task_num}: {current_agent_final}\n")
                 
                 if current_agent_final != original_agent_final:
                     malicious_final_answers.append(current_agent_final)
@@ -230,6 +230,7 @@ def calculate_pattern_statistics(tasks_answers, skip_agents=[], original_task_an
             else:
                 missed_patterns += 1
                 missed_patterns_dict[task_num] = (init_answer, final_answer, correct_answer)
+                print(f"Missed pattern for task {task_num}: init_answer={init_answer}, final_answer={final_answer}, correct_answer={correct_answer}")
 
     # Return counts dictionary instead of plotting
     return {
@@ -275,6 +276,7 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filena
     
     
     for idx, (dataset_name, stats) in enumerate(datasets_data.items()):
+        print(f"num_agents before adjustment: {num_agents}, num_malicious_agents: {num_malicious_agents}")
         if comparison_type == 'malicious':
             counts = [
                 stats['wrong_correct'],
@@ -285,6 +287,15 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filena
                 stats['wrong_malicious_wrong'], 
                 stats['correct_malicious_wrong'],
             ]
+            if "No" not in dataset_name:
+                num_agents_update = num_agents - num_malicious_agents  # Adjust num_agents to reflect only honest agents for percentage calculation
+            else:
+                num_agents_update = num_agents 
+            percentages = [(count / (stats['num_tasks'] * num_agents_update)) * 100 for count in counts]
+            # Offset bars for side-by-side display
+            offset = bar_width * idx
+            bars = ax.bar([i + offset for i in x], percentages, bar_width, 
+                        label=dataset_name, color=colors[idx], alpha=0.8)  
         else:
             counts = [
                 stats['wrong_correct'],
@@ -293,13 +304,14 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filena
                 stats['correct_wrong'],
                 stats['correct_correct']
             ]
-        print(f"type num_tasks {type(stats['num_tasks'])}, type num_agents {type(num_agents)}: {num_agents}")
+            percentages = [(count / (stats['num_tasks'] * num_agents)) * 100 for count in counts]
+            # Offset bars for side-by-side display
+            offset = bar_width * idx
+            bars = ax.bar([i + offset for i in x], percentages, bar_width, 
+                        label=dataset_name, color=colors[idx], alpha=0.8)
+            
+        print(f"type num_tasks {type(stats['num_tasks'])}: {stats['num_tasks']}, type num_agents {type(num_agents)}: {num_agents}")
 
-        percentages = [(count / (stats['num_tasks'] * num_agents)) * 100 for count in counts]
-        # Offset bars for side-by-side display
-        offset = bar_width * idx
-        bars = ax.bar([i + offset for i in x], percentages, bar_width, 
-                      label=dataset_name, color=colors[idx], alpha=0.8)
         
         # Add percentage labels
         for bar, percentage in zip(bars, percentages):
@@ -530,25 +542,43 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filena
 
 
 
-def calculate_round_statistics(tasks_answers, num_agents=3, rounds=3):
+
+def calculate_round_statistics(tasks_answers, skip_agents=[], original_task_answers=None, num_agents=3, rounds=3):
     """Calculate round convergence statistics WITHOUT creating a plot. Returns raw counts."""
     wrong_correct = 0
     correct_wrong = 0
+    correct_malicious_wrong = 0
     
     num_agents_converge_correct = dict()
     num_agents_converge_wrong = dict()
+    num_agents_converge_malicious_wrong = dict()
     
     for round_num in range(1, rounds + 1):
-        num_agents_converge_correct[round_num] = num_agents_converge_wrong[round_num] = 0
-    num_agents_converge_correct[rounds + 1] = num_agents_converge_wrong[rounds + 1] = 0
-    num_agents_converge_correct[rounds + 2] = num_agents_converge_wrong[rounds + 2] = 0
+        num_agents_converge_correct[round_num] = num_agents_converge_wrong[round_num] = num_agents_converge_malicious_wrong[round_num] = 0
+    num_agents_converge_correct[rounds + 1] = num_agents_converge_wrong[rounds + 1] = num_agents_converge_malicious_wrong[rounds + 1] = 0
+    num_agents_converge_correct[rounds + 2] = num_agents_converge_wrong[rounds + 2] = num_agents_converge_malicious_wrong[rounds + 2] = 0
 
     num_tasks = len(tasks_answers)
     is_converged_to_correct = False
     is_converged_to_wrong = False
 
+
     for task_num, (init_answer, round_answers, correct_answer) in tasks_answers.items():
         final_answer = round_answers[rounds + 1]
+        malicious_final_answers = []  # Track original answers from skipped agents that changed
+
+        if original_task_answers is not None and task_num in original_task_answers:
+            _, original_final_answers, _ = original_task_answers[task_num]
+
+            # First pass: identify if any malicious agent changed their answer
+            # mal_agent_changes = []  # Track which malicious agents changed
+            for agent_idx in skip_agents:
+                original_agent_final = original_final_answers[agent_idx]
+                current_agent_final = final_answer[agent_idx]
+                
+                if current_agent_final != original_agent_final:
+                    malicious_final_answers.append(current_agent_final)
+
 
         for agent_idx, agent_answer in enumerate(zip(init_answer, final_answer)): 
             init_wrong = agent_answer[0] != correct_answer[0]
@@ -565,7 +595,6 @@ def calculate_round_statistics(tasks_answers, num_agents=3, rounds=3):
                         num_agents_converge_correct[round_num + 2] += 1 
                         is_converged_to_correct = True
                         break
-
                     elif correct_round_answer and not is_converged_to_correct:
                         num_agents_converge_correct[round_num] += 1 
                         is_converged_to_correct = True
@@ -585,7 +614,12 @@ def calculate_round_statistics(tasks_answers, num_agents=3, rounds=3):
                         num_agents_converge_wrong[round_num + 2] += 1 
                         is_converged_to_wrong = True
                         break
-
+                    elif wrong_round_answer and not is_converged_to_wrong and round_answer[agent_idx] in malicious_final_answers:
+                        num_agents_converge_malicious_wrong[round_num] += 1 
+                        num_agents_converge_wrong[round_num] += 1 
+                        correct_malicious_wrong += 1
+                        is_converged_to_wrong = True
+                        break    
                     elif wrong_round_answer and not is_converged_to_wrong:
                         num_agents_converge_wrong[round_num] += 1 
                         is_converged_to_wrong = True
@@ -595,12 +629,86 @@ def calculate_round_statistics(tasks_answers, num_agents=3, rounds=3):
     return {
         'wrong_correct': wrong_correct,
         'correct_wrong': correct_wrong,
+        'correct_malicious_wrong': correct_malicious_wrong,
         'num_agents_converge_correct': num_agents_converge_correct,
         'num_agents_converge_wrong': num_agents_converge_wrong,
+        'num_agents_converge_malicious_wrong': num_agents_converge_malicious_wrong,
         'num_tasks': num_tasks,
         'num_agents': num_agents,
         'rounds': rounds
     }
+
+# def calculate_round_statistics(tasks_answers, num_agents=3, rounds=3):
+#     """Calculate round convergence statistics WITHOUT creating a plot. Returns raw counts."""
+#     wrong_correct = 0
+#     correct_wrong = 0
+    
+#     num_agents_converge_correct = dict()
+#     num_agents_converge_wrong = dict()
+    
+#     for round_num in range(1, rounds + 1):
+#         num_agents_converge_correct[round_num] = num_agents_converge_wrong[round_num] = 0
+#     num_agents_converge_correct[rounds + 1] = num_agents_converge_wrong[rounds + 1] = 0
+#     num_agents_converge_correct[rounds + 2] = num_agents_converge_wrong[rounds + 2] = 0
+
+#     num_tasks = len(tasks_answers)
+#     is_converged_to_correct = False
+#     is_converged_to_wrong = False
+
+#     for task_num, (init_answer, round_answers, correct_answer) in tasks_answers.items():
+#         final_answer = round_answers[rounds + 1]
+
+#         for agent_idx, agent_answer in enumerate(zip(init_answer, final_answer)): 
+#             init_wrong = agent_answer[0] != correct_answer[0]
+#             wrong_to_correct = correct_answer[0] == agent_answer[1]
+#             is_converged_to_correct = False 
+
+#             if init_wrong and wrong_to_correct:
+#                 wrong_correct += 1
+
+#                 for round_num, round_answer in round_answers.items():
+#                     correct_round_answer = round_answer[agent_idx] == correct_answer[0]
+
+#                     if round_num == rounds and not is_converged_to_correct and round_answer[agent_idx] == '':
+#                         num_agents_converge_correct[round_num + 2] += 1 
+#                         is_converged_to_correct = True
+#                         break
+
+#                     elif correct_round_answer and not is_converged_to_correct:
+#                         num_agents_converge_correct[round_num] += 1 
+#                         is_converged_to_correct = True
+#                         break
+#                     else:
+#                         continue
+            
+#             is_converged_to_wrong = False
+
+#             if not init_wrong and not wrong_to_correct:
+#                 correct_wrong += 1
+
+#                 for round_num, round_answer in round_answers.items():
+#                     wrong_round_answer = round_answer[agent_idx] != correct_answer[0]
+
+#                     if round_num == rounds and not is_converged_to_wrong and round_answer[agent_idx] == '':
+#                         num_agents_converge_wrong[round_num + 2] += 1 
+#                         is_converged_to_wrong = True
+#                         break
+
+#                     elif wrong_round_answer and not is_converged_to_wrong:
+#                         num_agents_converge_wrong[round_num] += 1 
+#                         is_converged_to_wrong = True
+#                         break
+#                     else:
+#                        continue
+#     return {
+#         'wrong_correct': wrong_correct,
+#         'correct_wrong': correct_wrong,
+#         'num_agents_converge_correct': num_agents_converge_correct,
+#         'num_agents_converge_wrong': num_agents_converge_wrong,
+#         'num_tasks': num_tasks,
+#         'num_agents': num_agents,
+#         'rounds': rounds
+#     }
 
 
 def plot_round_statistics_comparison(datasets_data, model_name, dataset_filename='', share_mode='Both', system="MAS", num_agents=3, rounds=3, num_malicious_agents=0, comparison_type='share-mode'):
@@ -614,6 +722,7 @@ def plot_round_statistics_comparison(datasets_data, model_name, dataset_filename
         system: 'MAS' or 'SAS'
         num_agents: Number of agents
         rounds: Number of rounds
+        num_malicious_agents: Number of malicious agents
         comparison_type: Type of comparison to plot; 'share-mode' for share mode comparison, 'malicious' for malicious comparison, or 'dataset' for dataset comparison
     """
     # Build round categories
@@ -645,6 +754,17 @@ def plot_round_statistics_comparison(datasets_data, model_name, dataset_filename
             num_agents_converge_wrong = stats['num_agents_converge_wrong']
             round_percentages = [(num_agents_converge_wrong[round_num] / correct_wrong) * 100 
                             for round_num in range(1, rounds + 3)]
+            
+            # correct_malicious_wrong = stats['correct_malicious_wrong']
+            
+            # if correct_malicious_wrong == 0:
+            #     print(f"Warning: {dataset_name} has no 'Correct→Malicious Wrong' conversions")
+            #     continue
+            
+            # # Extract convergence counts for each round
+            # num_agents_converge_malicious_wrong = stats['num_agents_converge_malicious_wrong']
+            # round_percentages_malicious = [(num_agents_converge_malicious_wrong[round_num] / correct_malicious_wrong) * 100 
+            #                 for round_num in range(1, rounds + 3)]
     
         else:
             wrong_correct = stats['wrong_correct']
@@ -710,6 +830,141 @@ def plot_round_statistics_comparison(datasets_data, model_name, dataset_filename
         print(f"Comparison round plot saved as {model_name}_{system}_{comparison_type}_comparison_round_statistics_{share_mode}.png")
     plt.close()
 
+def plot_malicious_round_statistics_comparison(datasets_data, model_name, dataset_filename='', share_mode='Both', system="MAS", num_agents=3, rounds=3, num_malicious_agents=0):
+    """
+    Plot round convergence statistics across multiple datasets side-by-side.
+    
+    Args:
+        datasets_data: Dict like {'openai-gsm8k': stats_dict, 'cais-mmlu': stats_dict, ...}
+        model_name: Name of the model (for title/filename)
+        share_mode: 'Both', 'Reasoning', or 'Answer'
+        system: 'MAS' or 'SAS'
+        num_agents: Number of agents
+        rounds: Number of rounds
+        num_malicious_agents: Number of malicious agents
+
+    """
+    # Build round categories
+    round_categories = []
+    for round_num in range(1, rounds + 1):
+        round_categories.append(f'Round {round_num}')
+    round_categories.append(f'Final Answer')
+    round_categories.append(f'Unknown\nConvergence\nRound')
+    
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    fig2, ax2 = plt.subplots(figsize=(14, 6))
+    
+    x = range(len(round_categories))
+    bar_width = 0.15
+    
+    # Generate color palette for datasets
+    #colors = plt.cm.Set3(range(len(datasets_data)))
+    colors = seaborn.color_palette("deep", n_colors=len(datasets_data))
+    
+    for idx, (dataset_name, stats) in enumerate(datasets_data.items()):
+
+        correct_wrong = stats['correct_wrong']
+        
+        if correct_wrong == 0:
+            print(f"Warning: {dataset_name} has no 'Correct→Wrong' conversions")
+            continue
+        
+        # Extract convergence counts for each round
+        num_agents_converge_wrong = stats['num_agents_converge_wrong']
+        round_percentages = [(num_agents_converge_wrong[round_num] / correct_wrong) * 100 
+                        for round_num in range(1, rounds + 3)]
+        
+        correct_malicious_wrong = stats['correct_malicious_wrong']
+        
+        # Calculate malicious percentages (zero if no malicious conversions)
+        if correct_malicious_wrong > 0:
+            num_agents_converge_malicious_wrong = stats['num_agents_converge_malicious_wrong']
+            round_percentages_malicious = [(num_agents_converge_malicious_wrong[round_num] / correct_wrong) * 100 
+                            for round_num in range(1, rounds + 3)]
+        else:
+            round_percentages_malicious = [0.0] * (rounds + 2)
+
+        # Offset bars for side-by-side display
+        offset = bar_width * idx
+        bars = ax.bar([i + offset for i in x], round_percentages, bar_width, 
+                    label=dataset_name, color=colors[idx], alpha=0.8)
+        
+        # Add percentage labels to first plot
+        for bar, percentage in zip(bars, round_percentages):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height,
+                f'{percentage:.1f}%',
+                ha='center', va='bottom', fontsize=7)
+
+        # Plot both series on ax2
+        correct_bars = ax2.bar(
+            [i + offset for i in x],
+            round_percentages,
+            bar_width,
+            label=f"{dataset_name} Correct→Wrong",
+            color=colors[idx],
+            alpha=0.9
+        )
+
+        # Add percentage labels for Correct→Wrong bars
+        for bar, percentage in zip(correct_bars, round_percentages):
+            height = bar.get_height()
+            ax2.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height,
+                f"{percentage:.1f}%",
+                ha='center',
+                va='bottom',
+                fontsize=7
+            )
+
+        # Only plot malicious bars for non-baseline datasets
+        if 'No' not in dataset_name:
+            malicious_bars = ax2.bar(
+                [i + offset for i in x],
+                round_percentages_malicious,
+                bar_width,
+                label=f"{dataset_name} Correct→Malicious Wrong",
+                color=colors[idx],
+                alpha=0.9,
+                hatch='//',
+                edgecolor='black',
+                linewidth=0.8
+            )
+
+            for bar, percentage in zip(malicious_bars, round_percentages_malicious):
+                height = bar.get_height()
+                ax2.text(
+                    bar.get_x() + bar.get_width() / 2.0,
+                    height,
+                    f"{percentage:.1f}%",
+                    ha='center',
+                    va='bottom',
+                    fontsize=7
+                )
+ 
+    ax2.set_ylabel('Percentage (%) of Correct→MaliciousWrong Answer Tasks')
+    ax2.set_xlabel('Round')
+    ax2.set_ylim(0, 105)
+    ax2.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system} ({num_malicious_agents} Malicious), {model_name}:\n Convergence From Correct→ Malicious Wrong Answer')
+
+    ax2.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
+    ax2.set_xticklabels(round_categories, rotation=45, ha='right')
+    ax2.legend()
+        
+    fig2.tight_layout()
+    
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_folder = os.path.join(script_dir, 'statistic_images')
+    os.makedirs(output_folder, exist_ok=True)   
+
+   
+    filepath_mal = os.path.join(output_folder, f"{model_name}_{system}_{dataset_filename}_{num_malicious_agents}_comparison_round_statistics_maliciouswrong_{share_mode}.png")
+    fig2.savefig(filepath_mal)
+    print(f"Comparison round plot saved as {model_name}_{system}_{dataset_filename}_{num_malicious_agents}_comparison_round_statistics_maliciouswrong_{share_mode}.png")
+    plt.close(fig2)
+
 
 def dataset_comparison(transcripts, round_figure=False, comparison_type='dataset'):
     """
@@ -746,7 +1001,7 @@ def dataset_comparison(transcripts, round_figure=False, comparison_type='dataset
         # Calculate statistics for each dataset
         stats = calculate_pattern_statistics(answers)
         if round_figure:
-            round_stats = calculate_round_statistics(round_answers, num_agents, num_rounds)
+            round_stats = calculate_round_statistics(round_answers, num_agents=num_agents, rounds=num_rounds)
             datasets_data_round[dataset_name] = round_stats
         # Store statistics for comparison
         datasets_data[dataset_name] = stats
@@ -772,63 +1027,64 @@ def dataset_comparison(transcripts, round_figure=False, comparison_type='dataset
             comparison_type=comparison_type,
         )
 
+
 def malicious_comparison(transcripts, round_figure=True):
-    """
-    Main function to perform malicious comparison for a given model and share mode.
-    
-    Args:
-        transcripts: Dict must have original dataset first. Like {'original': 'path/to/original/transcript', 'malicious': 'path/to/malicious/transcript'}
-        round_figure: Whether to plot round statistics
-    """
-    datasets_data = dict()
-    orig_answers, orig_round_answers = dict(), dict()
-    num_agents = None
-    num_rounds = None
+    datasets_data = {}
+    datasets_data_round = {}
+
+    baseline_answers = None
+    baseline_round_answers = None
     malicious_agents = []
-    malicious_agents_num = None
-    share_mode = ""
-    dataset_filename = ""
+    num_agents = num_rounds = None
+    share_mode = dataset_filename = system = model_name = ""
 
-    if round_figure:
-        datasets_data_round = dict()
- 
     for dataset_name, transcript_path in transcripts.items():
-        if 'No' in dataset_name:
-            print(f"Processing original dataset: {dataset_name}")
-            orig_answers, round_answers, summary_info = extract_answers(transcript_path)
-            stats = calculate_pattern_statistics(orig_answers)
-        else:   
-            print(f"Processing malicious dataset: {dataset_name}")  
-            # Extract answers for each dataset
-            answers, round_answers, summary_info = extract_answers(transcript_path)
-            # num_agents = summary_info['num_agents']
-            # num_rounds = summary_info['num_rounds']
-            # malicious_agents = summary_info['malicious_agents']
-            # malicious_agents_num = len(malicious_agents)
-            # share_mode = summary_info['share_mode']
-            # dataset_filename = summary_info['dataset_filename']
-            # system = summary_info['system']
-            # model_name = summary_info['model_name']
+        answers, round_answers, summary_info = extract_answers(transcript_path)
 
-            # Calculate statistics for each dataset
-            stats = calculate_pattern_statistics(answers, 
-                                                 skip_agents=malicious_agents, 
-                                                 original_task_answers=orig_answers)
-        num_agents = summary_info['num_agents']
         num_rounds = summary_info['num_rounds']
-        malicious_agents = summary_info['malicious_agents']
-        malicious_agents_num = len(malicious_agents)
         share_mode = summary_info['share_mode']
         dataset_filename = summary_info['dataset_filename']
         system = summary_info['system']
         model_name = summary_info['model_name']
+        num_agents = summary_info['num_agents']
 
-        if round_figure:
-            round_stats = calculate_round_statistics(round_answers, num_agents, num_rounds)
-            datasets_data_round[dataset_name] = round_stats
-        # Store statistics for comparison
-        datasets_data[dataset_name] = stats
-    
+        if 'No' in dataset_name:
+            
+            baseline_answers = answers
+            baseline_round_answers = round_answers
+
+            datasets_data[dataset_name] = calculate_pattern_statistics(
+                baseline_answers,
+                skip_agents=[],
+                original_task_answers=None,
+            )
+
+            if round_figure:
+                datasets_data_round[dataset_name] = calculate_round_statistics(
+                    baseline_round_answers,
+                    skip_agents=[],
+                    original_task_answers=None,
+                    num_agents=num_agents,
+                    rounds=num_rounds,
+                )
+        else:
+            malicious_agents = summary_info['malicious_agents']
+            
+            datasets_data[dataset_name] = calculate_pattern_statistics(
+                answers,
+                skip_agents=malicious_agents,
+                original_task_answers=baseline_answers,
+            )
+
+            if round_figure:
+                datasets_data_round[dataset_name] = calculate_round_statistics(
+                    round_answers,
+                    skip_agents=malicious_agents,
+                    original_task_answers=baseline_round_answers,
+                    num_agents=num_agents - len(malicious_agents),
+                    rounds=num_rounds,
+                )
+
     plot_pattern_statistics_comparison(
         datasets_data,
         model_name,
@@ -836,11 +1092,12 @@ def malicious_comparison(transcripts, round_figure=True):
         share_mode=share_mode,
         system=system,
         num_agents=num_agents,
-        num_malicious_agents=malicious_agents_num,
+        num_malicious_agents=len(malicious_agents),
         comparison_type='malicious',
     )
+
     if round_figure:
-        plot_round_statistics_comparison(
+        plot_malicious_round_statistics_comparison(
             datasets_data_round,
             model_name,
             dataset_filename=dataset_filename,
@@ -848,19 +1105,20 @@ def malicious_comparison(transcripts, round_figure=True):
             system=system,
             num_agents=num_agents,
             rounds=num_rounds,
-            num_malicious_agents=malicious_agents_num,
-            comparison_type='malicious',
+            num_malicious_agents=len(malicious_agents),
         )
 
 
 
-# transcript_data = {
-#     'openai/gsm8k No Malicious Agent': 'transcripts_mal_test/qwen3b_2026-03-29_00h31m15s',
-#     'openai/gsm8k Malicious Agent 3': 'transcripts_mal_test/qwen3b_job342_2026-04-01_01h15m49s'
-# }
+transcript_data = {
+    'openai/gsm8k No Malicious Agent': 'transcripts_mal_test/qwen3b_2026-03-29_00h31m15s',
+    'openai/gsm8k Malicious Agent 3': 'transcripts_mal_test/qwen3b_job342_2026-04-01_01h15m49s',
+    'openai/gsm8k No Malicious Agent again': 'transcripts_mal_test/qwen3b_2026-03-29_00h31m15s',
+    'openai/gsm8k Malicious Agent 2': 'transcripts_mal_test/qwen3b_job342_2026-04-01_01h15m49s'
+}
 
-# malicious_comparison(transcript_data)
-# dataset_comparison(transcript_data, round_figure=True, comparison_type='dataset')
+malicious_comparison(transcript_data, round_figure=True)
+# dataset_comparison(transcript_data, round_figure=True, comparison_type='malicious')
 
 # ╔════════════════════════════════════════╗
 # ║           DATASET COMPARISONS          ║
