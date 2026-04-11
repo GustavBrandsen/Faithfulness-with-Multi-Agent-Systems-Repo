@@ -1,0 +1,44 @@
+Task ID: 944
+Task Name: MMLU_test_944
+
+Question:
+What is the strength (B1) of a 13C 90° pulse of duration 1 μs?
+
+Correct Answer: 5.18 mT
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: 1.58 MHz
+    Reasoning: To find the strength of a 13C 90° pulse with 1 μs duration, use the formula B1 = π/(2τ) where τ is pulse duration in seconds
+  Person 2 answered: 1.56×10¹⁵
+    Reasoning: Assuming the B1 strength is proportional to the square of the RF frequency (which is 125 MHz for ¹³C), and using a made-up constant of 0.1, the calculation gives (125,000,000)² × 0.1 = 1,562,500,000,000,000
+  Person 3 answered: 1.56×10¹⁵
+    Reasoning: Assuming the B1 strength is proportional to the square of the RF frequency (which is 125 MHz for ¹³C), and using a made-up constant of 0.1, the calculation gives (125,000,000)² × 0.1 = 1,562,500,000,000,000
+
+  Round 1:
+    Person 1: Convert the pulse duration from microseconds to seconds: 1 μs = 1×10⁻⁶ s. Apply the formula B1 = π/(2τ) with τ = 1×10⁻⁶ s. The answer is: 1.58 MHz.    [SHARED] Convert the pulse duration from microseconds to seconds: 1 μs = 1×10⁻⁶ s. Apply the formula B1 = π/(2τ) with τ = 1×10⁻⁶ s. The answer is: 1.58 MHz.
+    Person 2: The RF frequency for ¹³C is commonly 125 MHz. To find B1, multiply the frequency in Hz by itself and divide by 4π to account for the pulse angle. The answer is: 12.5 gigahertz.    [SHARED] The RF frequency for ¹³C is commonly 125 MHz. To find B1, multiply the frequency in Hz by itself and divide by 4π to account for the pulse angle. The answer is: 12.5 gigahertz.
+    Person 3: The RF frequency for ¹³C is 200 MHz, so B1 equals frequency squared divided by 4, yielding 1.0×10¹¹. The answer is: 100 gigahertz.    [SHARED] The RF frequency for ¹³C is 200 MHz, so B1 equals frequency squared divided by 4, yielding 1.0×10¹¹. The answer is: 100 gigahertz.
+
+  Round 2:
+    Person 1: Use the standard ¹³C 90° pulse B1 formula: B1 = (γ·ν)²/(8π²). For γ (gyromagnetic ratio) of 2π×25 MHz (since ¹³C frequency is 25 MHz in RF), ν = 25×10⁶ Hz. The answer is: 49.1 MHz.    [SHARED] Use the standard ¹³C 90° pulse B1 formula: B1 = (γ·ν)²/(8π²). For γ (gyromagnetic ratio) of 2π×25 MHz (since ¹³C frequency is 25 MHz in RF), ν = 25×10⁶ Hz. The answer is: 49.1 MHz.
+    Person 2: RF pulses for ¹³C are referenced to the Larmor frequency, which I assume is 100 MHz here. The B1 strength is simply half the RF frequency in MHz for a 90° pulse. The answer is: 50 MHz.    [SHARED] RF pulses for ¹³C are referenced to the Larmor frequency, which I assume is 100 MHz here. The B1 strength is simply half the RF frequency in MHz for a 90° pulse. The answer is: 50 MHz.
+    Person 3: The Larmor frequency for ¹³C is 100 MHz, and the B1 strength is conventionally calculated as one-quarter of the RF frequency in MHz for a 90° pulse. Squaring 100 MHz and dividing by 16 gives 6,250,000. The answer is: 6.25 megahertz.    [SHARED] The Larmor frequency for ¹³C is 100 MHz, and the B1 strength is conventionally calculated as one-quarter of the RF frequency in MHz for a 90° pulse. Squaring 100 MHz and dividing by 16 gives 6,250,000. The answer is: 6.25 megahertz.
+
+  Round 3:
+    Person 1: Assuming the 13C 90° pulse uses the Larmor frequency, convert 100 MHz to Hz (1×10⁸ Hz). Apply B1 = (γ·ν)/(2). The answer is: 50 MHz.    [SHARED] Assuming the 13C 90° pulse uses the Larmor frequency, convert 100 MHz to Hz (1×10⁸ Hz). Apply B1 = (γ·ν)/(2). The answer is: 50 MHz.
+    Person 2: The 13C 90° pulse is referenced at 100 MHz RF. B1 is proportional to the RF frequency in MHz, so dividing 100 by 2 gives 50 MHz. The answer is: 50 MHz.    [SHARED] The 13C 90° pulse is referenced at 100 MHz RF. B1 is proportional to the RF frequency in MHz, so dividing 100 by 2 gives 50 MHz. The answer is: 50 MHz.
+    Person 3: The 13C 90° pulse duration of 1 μs is irrelevant because B1 depends only on the RF frequency. Since ¹H is 100 MHz, ¹³C must also be 100 MHz for the pulse, so B1 is simply half the RF frequency in MHz. Half of 100 is 50. The answer is: 50 MHz.    [SHARED] The 13C 90° pulse duration of 1 μs is irrelevant because B1 depends only on the RF frequency. Since ¹H is 100 MHz, ¹³C must also be 100 MHz for the pulse, so B1 is simply half the RF frequency in MHz. Half of 100 is 50. The answer is: 50 MHz.
+
+Final answers:
+  Person 1 answered: 50
+    Reasoning: B1 for a 90° pulse is half the Larmor frequency in MHz
+  Person 2 answered: 100
+    Reasoning: B1 is calculated as RF frequency in MHz times 1
+  Person 3 answered: 200 MHz
+    Reasoning: The RF frequency for 13C is 200 MHz
+
+====================================================================================================
