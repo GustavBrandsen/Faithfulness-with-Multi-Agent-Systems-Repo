@@ -477,6 +477,7 @@ def save_session_summary(total_seconds: float, results_file: str) -> str:
 
 def main():
     args = sys.argv[1:]
+    print(f"Number of arguments: {len(args)}")
     if len(args) >= 1 and args[0] != "":
         CONFIG["num_tasks"] = int(args[0])
     if len(args) >= 2 and args[1] != "":
@@ -489,6 +490,7 @@ def main():
         CONFIG["special_agent_indices"] = ast.literal_eval(args[4])
     if len(args) >= 6:
         CONFIG["kept_reasoning_percentage"] = float(args[5])
+        print(f"Set kept_reasoning_percentage to {float(args[5])}")
 
     start_time = time.time()
     print("Starting Multi-Agent Evaluation")
