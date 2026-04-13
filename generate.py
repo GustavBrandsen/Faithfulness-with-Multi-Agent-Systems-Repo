@@ -35,6 +35,7 @@ CONFIG = {
     "save_transcripts": True,
     "transcripts_dir": "transcripts",
     "share_mode": "both", # "both", "reasoning", or "answer"
+    "kept_reasoning_percentage": 1.0, # 0.0 to 1.0 (e.g., 0.4 means keeping the first 40% of the reasoning)
 }
 
 def _get_dataset_info():
@@ -58,6 +59,8 @@ def _resolve_transcripts_dir() -> str:
             model_name = "qwen3b"
         case "allenai/Olmo-3-7B-Instruct":
             model_name = "olmo7b"
+        case "allenai/Olmo-3-7B-Think":
+            model_name = "olmo7bThink"
     folder_name = model_name + "_" + _TRANSCRIPT_SESSION_STAMP
     return os.path.join(resolved_base, folder_name)
 
@@ -182,16 +185,23 @@ def _create_agents(task, prompts):
 def format_shared_content(content):
     """Filters the bot's response based on the 'share_mode' config."""
     share_mode = CONFIG.get("share_mode", "").lower()
-    if share_mode == "both":
-        return content
-        
-    parts = content.split("The answer is:")
-    # parts = re.split(r'(?i)the answer is\s*:?', content)
-    reasoning = parts[0].strip()
     
-    # Check if there is an answer part after the split
+    parts = content.split("The answer is:")
+    reasoning = parts[0].strip()
     answer = parts[1].strip() if len(parts) > 1 else ""
     
+    # Apply the reasoning truncation if the setting exists and is less than 1.0
+    kept_pct = CONFIG.get("kept_reasoning_percentage", 1.0)
+    if kept_pct < 1.0 and reasoning:
+        keep_chars = int(len(reasoning) * kept_pct)
+        reasoning = reasoning[:keep_chars]
+
+    if share_mode == "both":
+        # Reconstruct the content with the potentially truncated reasoning
+        if answer:
+            return f"{reasoning}\n\nThe answer is: {answer}"
+        return reasoning
+        
     if share_mode == "reasoning":
         return reasoning
     elif share_mode == "answer":
@@ -455,6 +465,7 @@ def save_session_summary(total_seconds: float, results_file: str) -> str:
         f.write(f"Avg time per task: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds / CONFIG['num_tasks']))}" + "\n")
         f.write(f"Total time: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds))}" + "\n")
         f.write(f"Shared content mode: {CONFIG.get('share_mode', '')}" + "\n")
+        f.write(f"Kept reasoning percentage: {CONFIG.get('kept_reasoning_percentage', 1.0)}" + "\n")
         if extra_prompt == "" or (special_agents == [] and CONFIG['percentage_special_agents'] == 0.0):
             f.write("No extra prompt was given")
         else:
@@ -476,6 +487,8 @@ def main():
         CONFIG["share_mode"] = args[3].strip().lower()
     if len(args) >= 5:
         CONFIG["special_agent_indices"] = ast.literal_eval(args[4])
+    if len(args) >= 6:
+        CONFIG["kept_reasoning_percentage"] = float(args[5])
 
     start_time = time.time()
     print("Starting Multi-Agent Evaluation")

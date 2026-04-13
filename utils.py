@@ -16,7 +16,8 @@ print("device:", torch.cuda.get_device_name(0))
 POSSIBLE_MODELS = [
     'Qwen/Qwen2.5-3B-Instruct',
     'meta-llama/Llama-3.2-3B-Instruct',
-    'allenai/Olmo-3-7B-Instruct'
+    'allenai/Olmo-3-7B-Instruct',
+    'allenai/Olmo-3-7B-Think'
 ]
 
 # Declare our module-level variables
