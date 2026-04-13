@@ -57,11 +57,11 @@ def extract_answers(file_path):
     num_rounds_regex = r"(?:Rounds: )(\d+)"
     malicious_regex = r"(?:Malicious agent\(s\): )(.+)(?:\s+\|)"
     share_mode_regex = r"(?:Shared content mode: )(\w+)"
+    dataset_name_regex = r"(?:Dataset: \w+\/)(\w+)"
     model_name_regex = r"(?:Model: .+\/)(.+)"
     
     num_agents = int(re.findall(num_agents_regex, summary_text)[0])
     num_rounds = int(re.findall(num_rounds_regex, summary_text)[0])
-    dataset_name_regex = r"(?:Dataset: \w+\/)(\w+)"
     malicious_agents = ast.literal_eval(re.findall(malicious_regex, summary_text)[0]) if re.findall(malicious_regex, summary_text) else []
     share_mode = re.findall(share_mode_regex, summary_text)[0]
     dataset_filename = re.findall(dataset_name_regex, summary_text)[0]
@@ -247,36 +247,286 @@ def calculate_pattern_statistics(tasks_answers, skip_agents=[], original_task_an
         'missed_patterns_dict': missed_patterns_dict
     }
 
-def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filename='', share_mode='Both', system='MAS', num_agents=3, num_malicious_agents=0, comparison_type='dataset'):
-    """
-    Plot statistics across multiple datasets side-by-side.
+
+# def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filename='', share_mode='Both', system='MAS', num_agents=3, num_malicious_agents=0, comparison_type='dataset'):
+#     """
+#     Plot statistics across multiple datasets side-by-side.
     
-    Args:
-        datasets_data: Dict like {'openai-gsm8k': stats_dict, 'cais-mmlu': stats_dict, ...}
-        model_name: Name of the model (for title/filename)
-        dataset_filename: Filename-friendly version of dataset name (for title/filename)
-        share_mode: 'Both', 'Reasoning', or 'Answer'
-        system: 'MAS' or 'SAS'
-        num_agents: Number of agents
-        comparison_type: Type of comparison to plot; 'share-mode' for share mode comparison, 'malicious' for malicious comparison, or 'dataset' for dataset comparison
+#     Args:
+#         datasets_data: Dict like {'openai-gsm8k': stats_dict, 'cais-mmlu': stats_dict, ...}
+#         model_name: Name of the model (for title/filename)
+#         dataset_filename: Filename-friendly version of dataset name (for title/filename)
+#         share_mode: 'Both', 'Reasoning', or 'Answer'
+#         system: 'MAS' or 'SAS'
+#         num_agents: Number of agents
+#         comparison_type: Type of comparison to plot; 'share-mode' for share mode comparison, 'malicious' for malicious comparison, or 'dataset' for dataset comparison
+#     """
+#     if comparison_type == 'malicious':
+#         categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct', 'Wrong→Malicious Wrong', 'Correct→Malicious Wrong']
+#     elif comparison_type == 'sharemode_malicious' or comparison_type == 'malicious_convergence':
+#         categories = ['Wrong→Correct', 'Wrong→Wrong', 'Correct→Wrong', 'Correct→Correct', 'Converges to Malicious Wrong']
+
+#         datasets_data = {
+#             name: stats
+#             for name, stats in datasets_data.items()
+#             if ("No Mal Agent" not in name and "No Malicious Agent" not in name)
+#         }
+#     else:
+#         categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct']
+       
+
+    
+#     if comparison_type == 'sharemode_malicious' or comparison_type == 'malicious_convergence':
+#         fig, ax = plt.subplots(figsize=(22, 7))
+#         x = range(len(categories))
+#         bar_width = 0.1
+
+#         def dataset_family(name):
+#             # Example:
+#             # "openai/gsm8k: Mal Agent 1 - Answer" -> "openai/gsm8k"
+#             return name.split(':', 1)[0].strip()
+
+#         family_order = []
+#         for name in datasets_data.keys():
+#             fam = dataset_family(name)
+#             if fam not in family_order:
+#                 family_order.append(fam)
+
+#         family_colors = seaborn.color_palette("deep", n_colors=max(1, len(family_order)))
+#         family_color_map = {fam: family_colors[i] for i, fam in enumerate(family_order)}
+#     else:
+#         fig, ax = plt.subplots(figsize=(14, 6))
+#         x = range(len(categories))
+#         bar_width = 0.15 
+#         colors = seaborn.color_palette("deep", n_colors=len(datasets_data))
+    
+    
+    
+#      # Adjust based on number of datasets
+    
+#     # Generate color palette for datasets
+#     #colors = plt.cm.Set3(range(len(datasets_data)))
+#     # colors = seaborn.color_palette("deep", n_colors=len(datasets_data))
+    
+    
+#     for idx, (dataset_name, payload) in enumerate(datasets_data.items()):
+#         if isinstance(payload, dict) and "stats" in payload:
+#             stats = payload["stats"]
+#             num_honest_agents = payload.get("honest_agents", num_agents)
+#             # malicious_agents = payload["malicious_agents"]
+#         else:
+#             stats = payload
+#             num_honest_agents = num_agents
+#         if comparison_type == 'malicious':
+#             counts = [
+#                 stats['wrong_correct'],
+#                 stats['wrong_different_wrong'],
+#                 stats['wrong_same_wrong'],
+#                 stats['correct_wrong'],
+#                 stats['correct_correct'],
+#                 stats['wrong_malicious_wrong'], 
+#                 stats['correct_malicious_wrong'],
+#             ]
+#             percentages = [(count / (stats['num_tasks'] * num_honest_agents)) * 100 for count in counts]
+#             # Offset bars for side-by-side display
+#             offset = bar_width * idx
+#             bars = ax.bar([i + offset for i in x], percentages, bar_width, 
+#                         label=dataset_name, color=colors[idx], alpha=0.8)  
+#         elif comparison_type == 'sharemode_malicious' or comparison_type == 'malicious_convergence':
+#             counts = [
+#                 stats['wrong_correct'],
+#                 stats['wrong_different_wrong'] + stats['wrong_same_wrong'],
+#                 stats['correct_wrong'],
+#                 stats['correct_correct'],
+#                 stats['wrong_malicious_wrong'] + stats['correct_malicious_wrong']
+#             ]
+#             print(f"Converges to Malicious Wrong: {stats['wrong_malicious_wrong'] + stats['correct_malicious_wrong']}")
+
+    
+#             percentages = [(count / (stats['num_tasks'] * num_honest_agents)) * 100 for count in counts]
+#             # Offset bars for side-by-side display
+#             offset = bar_width * idx
+
+#             fam = dataset_family(dataset_name)
+#             bar_color = family_color_map[fam]
+
+#             name_lower = dataset_name.lower()
+#             if 'answer' in name_lower or num_honest_agents == 1:
+#                 bar_alpha = 0.45
+#             elif 'both' in name_lower or num_honest_agents == 2:
+#                 bar_alpha = 0.80
+#             else:
+#                 bar_alpha = 0.70
+                
+#             bars = ax.bar([i + offset for i in x], percentages, bar_width, 
+#                         label=dataset_name, color=bar_color, alpha=bar_alpha)  
+#         else:
+#             if "SAS" in dataset_name:
+#                 num_agents_update = 1  # For SAS, only 1 agent's answer is relevant for percentage calculation
+#             else:
+#                 num_agents_update = num_agents  # For MAS, all agents' answers are relevant
+#             counts = [
+#                 stats['wrong_correct'],
+#                 stats['wrong_different_wrong'],
+#                 stats['wrong_same_wrong'],
+#                 stats['correct_wrong'],
+#                 stats['correct_correct']
+#             ]
+#             percentages = [(count / (stats['num_tasks'] * num_agents_update)) * 100 for count in counts]
+#             # Offset bars for side-by-side display
+#             offset = bar_width * idx
+#             bars = ax.bar([i + offset for i in x], percentages, bar_width, 
+#                         label=dataset_name, color=colors[idx], alpha=0.8)
+            
+#         print(f"type num_tasks {type(stats['num_tasks'])}: {stats['num_tasks']}, type num_agents {type(num_agents)}: {num_agents}")
+
+        
+#         # Add percentage labels
+#         for bar, percentage in zip(bars, percentages):
+#             height = bar.get_height()
+#             ax.text(bar.get_x() + bar.get_width()/2., height,
+#                    f'{percentage:.1f}%',
+#                    ha='center', va='bottom', fontsize=7)
+    
+#     ax.set_ylabel('Percentage (%) of Tasks')
+#     ax.set_xlabel('Answer Pattern')
+#     ax.set_ylim(0, 105)
+    
+#     if comparison_type == 'share-mode':
+#         ax.set_title(f'{num_agents} Agents {system}, {model_name}:\n Share-Modes Impact on Answer Patterns')
+#     elif comparison_type == 'malicious':
+#         ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system} ({num_malicious_agents} Malicious), {model_name}:\n Malicious Agent Impact on Answer Patterns')
+#     elif comparison_type == 'sharemode_malicious':
+#         ax.set_title(f'{num_agents} Agents {system} ({num_malicious_agents} Malicious), {model_name}:\n Share-Mode and Malicious Agent Impact on Answer Patterns')
+#     elif comparison_type == 'malicious_convergence':
+#         ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\n Malicious Agent Impact on Answer Pattern Convergence')
+#     elif comparison_type == 'model':
+#         ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {dataset_filename} dataset:\n Answer Patterns Across Models')    
+#     elif comparison_type == 'system':
+#         ax.set_title(f'Share-Mode: {share_mode} |  {model_name}, {dataset_filename} dataset:\n Answer Patterns Across Systems')    
+#     else:
+#         ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\n Answer Patterns Comparison Across Datasets')
+    
+
+#     ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
+#     ax.set_xticklabels(categories, rotation=45, ha='right')
+#     ax.legend()
+        
+#     plt.tight_layout()
+        
+#     script_dir = os.path.dirname(os.path.abspath(__file__))
+#     output_folder = os.path.join(script_dir, 'statistic_images')
+#     os.makedirs(output_folder, exist_ok=True)
+    
+#     dataset_suffix = '_'.join(datasets_data.keys())
+
+#     if comparison_type == 'share-mode': 
+#         plot_image_name = f"{model_name}_{dataset_filename}_{system}_{comparison_type}_comparison_statistics.png"
+#     elif comparison_type == 'malicious':
+#         plot_image_name = f"{model_name}_{dataset_filename}_{system}_{num_malicious_agents}_comparison_statistics_{share_mode}.png"
+#     elif comparison_type == 'sharemode_malicious':
+#         plot_image_name = f"{model_name}_{system}_{num_malicious_agents}_{comparison_type}_comparison_statistics.png"
+#     elif comparison_type == 'malicious_convergence':
+#         plot_image_name = f"{model_name}_{system}_{comparison_type}_comparison_statistics_{share_mode}.png"
+#     elif comparison_type == 'model':
+#         plot_image_name = f"{dataset_filename}_{system}_{comparison_type}_comparison_statistics_{share_mode}.png"
+#     elif comparison_type == 'system':
+#         plot_image_name = f"{model_name}_{dataset_filename}_{comparison_type}_comparison_statistics_{share_mode}.png"
+#     else:
+#         plot_image_name = f"{model_name}_{system}_{comparison_type}_comparison_statistics_{share_mode}.png"
+    
+#     filepath = os.path.join(output_folder, plot_image_name)
+#     plt.savefig(filepath)
+#     print(f"Comparison plot saved as {plot_image_name}")
+
+#     # plt.clf()
+#     plt.close()
+
+
+def plot_pattern_statistics_comparison(
+    datasets_data,
+    model_name,
+    dataset_filename='',
+    share_mode='Both',
+    system='MAS',
+    num_agents=3,
+    num_malicious_agents=0,
+    comparison_type='dataset'
+):
     """
+    Horizontal version:
+    - Percentage on x-axis
+    - Answer patterns on y-axis
+    - Better for narrow paper columns
+    """
+
+    # Categories + optional filtering for malicious comparison families
     if comparison_type == 'malicious':
-        categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct', 'Wrong→Malicious Wrong', 'Correct→Malicious Wrong']
+        categories = [
+            'Wrong→Correct',
+            'Wrong→Different Wrong',
+            'Wrong→Same Wrong',
+            'Correct→Wrong',
+            'Correct→Correct',
+            'Wrong→Malicious Wrong',
+            'Correct→Malicious Wrong'
+        ]
+    elif comparison_type in ('sharemode_malicious', 'malicious_convergence'):
+        categories = [
+            'Wrong→Correct',
+            'Wrong→Wrong',
+            'Correct→Wrong',
+            'Correct→Correct',
+            'Converges to Malicious Wrong'
+        ]
+        datasets_data = {
+            name: payload
+            for name, payload in datasets_data.items()
+            if ("No Mal Agent" not in name and "No Malicious Agent" not in name)
+        }
     else:
-        categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct']
-    
-    fig, ax = plt.subplots(figsize=(14, 6))
-    
-    x = range(len(categories))
-    bar_width = 0.15  # Adjust based on number of datasets
-    
-    # Generate color palette for datasets
-    #colors = plt.cm.Set3(range(len(datasets_data)))
-    colors = seaborn.color_palette("deep", n_colors=len(datasets_data))
-    
-    
-    for idx, (dataset_name, stats) in enumerate(datasets_data.items()):
-        print(f"num_agents before adjustment: {num_agents}, num_malicious_agents: {num_malicious_agents}")
+        categories = [
+            'Wrong→Correct',
+            'Wrong→Different Wrong',
+            'Wrong→Same Wrong',
+            'Correct→Wrong',
+            'Correct→Correct'
+        ]
+
+    num_sets = max(1, len(datasets_data))
+    y_base = list(range(len(categories)))
+
+    # Compact width for paper, adaptive height for readability
+    fig_height = max(4.8, 0.85 * len(categories) + 0.18 * num_sets * len(categories))
+    fig, ax = plt.subplots(figsize=(10.5, fig_height))
+
+    # Bar thickness per dataset within each category group
+    bar_h = min(0.22, 0.8 / num_sets)
+
+    # Color setup
+    if comparison_type in ('sharemode_malicious', 'malicious_convergence'):
+        def dataset_family(name):
+            return name.split(':', 1)[0].strip()
+
+        family_order = []
+        for name in datasets_data.keys():
+            fam = dataset_family(name)
+            if fam not in family_order:
+                family_order.append(fam)
+
+        family_colors = seaborn.color_palette("deep", n_colors=max(1, len(family_order)))
+        family_color_map = {fam: family_colors[i] for i, fam in enumerate(family_order)}
+    else:
+        colors = seaborn.color_palette("deep", n_colors=num_sets)
+
+    for idx, (dataset_name, payload) in enumerate(datasets_data.items()):
+        if isinstance(payload, dict) and "stats" in payload:
+            stats = payload["stats"]
+            num_honest_agents = payload.get("honest_agents", num_agents)
+        else:
+            stats = payload
+            num_honest_agents = num_agents
+
         if comparison_type == 'malicious':
             counts = [
                 stats['wrong_correct'],
@@ -284,83 +534,121 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filena
                 stats['wrong_same_wrong'],
                 stats['correct_wrong'],
                 stats['correct_correct'],
-                stats['wrong_malicious_wrong'], 
+                stats['wrong_malicious_wrong'],
                 stats['correct_malicious_wrong'],
             ]
-            if "No" not in dataset_name:
-                num_agents_update = num_agents - num_malicious_agents  # Adjust num_agents to reflect only honest agents for percentage calculation
-            else:
-                num_agents_update = num_agents 
-            percentages = [(count / (stats['num_tasks'] * num_agents_update)) * 100 for count in counts]
-            # Offset bars for side-by-side display
-            offset = bar_width * idx
-            bars = ax.bar([i + offset for i in x], percentages, bar_width, 
-                        label=dataset_name, color=colors[idx], alpha=0.8)  
+            denom_agents = num_honest_agents
+
+        elif comparison_type in ('sharemode_malicious', 'malicious_convergence'):
+            counts = [
+                stats['wrong_correct'],
+                stats['wrong_different_wrong'] + stats['wrong_same_wrong'],
+                stats['correct_wrong'],
+                stats['correct_correct'],
+                stats['wrong_malicious_wrong'] + stats['correct_malicious_wrong'],
+            ]
+            denom_agents = num_honest_agents
+
         else:
             counts = [
                 stats['wrong_correct'],
                 stats['wrong_different_wrong'],
                 stats['wrong_same_wrong'],
                 stats['correct_wrong'],
-                stats['correct_correct']
+                stats['correct_correct'],
             ]
-            percentages = [(count / (stats['num_tasks'] * num_agents)) * 100 for count in counts]
-            # Offset bars for side-by-side display
-            offset = bar_width * idx
-            bars = ax.bar([i + offset for i in x], percentages, bar_width, 
-                        label=dataset_name, color=colors[idx], alpha=0.8)
-            
-        print(f"type num_tasks {type(stats['num_tasks'])}: {stats['num_tasks']}, type num_agents {type(num_agents)}: {num_agents}")
+            denom_agents = 1 if "SAS" in dataset_name else num_agents
 
-        
-        # Add percentage labels
-        for bar, percentage in zip(bars, percentages):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{percentage:.1f}%',
-                   ha='center', va='bottom', fontsize=7)
-    
-    ax.set_ylabel('Percentage (%) of Tasks')
-    ax.set_xlabel('Answer Pattern')
-    ax.set_ylim(0, 105)
-    
+        denom = max(1, stats['num_tasks'] * denom_agents)
+        percentages = [(count / denom) * 100 for count in counts]
+
+        # Vertical offset per dataset within each pattern row
+        y_offset = (idx - (num_sets - 1) / 2.0) * bar_h
+        y_pos = [y + y_offset for y in y_base]
+
+        if comparison_type in ('sharemode_malicious', 'malicious_convergence'):
+            fam = dataset_family(dataset_name)
+            bar_color = family_color_map[fam]
+            name_lower = dataset_name.lower()
+            if 'answer' in name_lower or num_honest_agents == 1:
+                bar_alpha = 0.45
+            elif 'both' in name_lower or num_honest_agents == 2:
+                bar_alpha = 0.80
+            else:
+                bar_alpha = 0.70
+            bars = ax.barh(y_pos, percentages, height=bar_h, label=dataset_name, color=bar_color, alpha=bar_alpha)
+        else:
+            bars = ax.barh(y_pos, percentages, height=bar_h, label=dataset_name, color=colors[idx], alpha=0.8)
+
+        # Value labels at bar end
+        for bar, pct in zip(bars, percentages):
+            ax.text(
+                bar.get_width() + 0.8,
+                bar.get_y() + bar.get_height() / 2.0,
+                f'{pct:.1f}%',
+                va='center',
+                ha='left',
+                fontsize=6
+            )
+
+    ax.set_xlabel('Percentage (%) of Tasks')
+    ax.set_ylabel('Answer Pattern')
+    ax.set_xlim(0, 105)
+    ax.set_yticks(y_base)
+    ax.set_yticklabels(categories)
+    ax.invert_yaxis()
+
     if comparison_type == 'share-mode':
-        ax.set_title(f'{num_agents} Agents {system}, {model_name}:\n Share-Modes Impact on Answer Patterns')
-        
+        ax.set_title(f'{num_agents} Agents {system}, {model_name}: Share-Modes Impact on Answer Patterns')
     elif comparison_type == 'malicious':
-        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system} ({num_malicious_agents} Malicious), {model_name}:\n Malicious Agent Impact on Answer Patterns')
-        
+        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system} ({num_malicious_agents} Malicious), {model_name}:\nMalicious Agent Impact on Answer Patterns')
+    elif comparison_type == 'sharemode_malicious':
+        ax.set_title(f'{num_agents} Agents {system} ({num_malicious_agents} Malicious), {model_name}:\nShare-Mode and Malicious Agent Impact on Answer Patterns')
+    elif comparison_type == 'malicious_convergence':
+        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\nMalicious Convergence Patterns')
+    elif comparison_type == 'model':
+        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {dataset_filename}:\nAnswer Patterns Across Models')
+    elif comparison_type == 'system':
+        ax.set_title(f'Share-Mode: {share_mode} | {model_name}, {dataset_filename}:\nAnswer Patterns Across Systems')
     else:
-        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\n Answer Patterns Comparison Across Datasets')
-    
+        ax.set_title(f'Share-Mode: {share_mode} | {num_agents} Agents {system}, {model_name}:\nAnswer Patterns Across Datasets')
 
-    ax.set_xticks([i + bar_width * (len(datasets_data) - 1) / 2 for i in x])
-    ax.set_xticklabels(categories, rotation=45, ha='right')
-    ax.legend()
-        
+    # Put legend outside so plot area stays compact
+    legend_cols = min(4, num_sets)
+    ax.legend(
+        loc='upper center',
+        bbox_to_anchor=(0.5, -0.14),
+        ncol=legend_cols,
+        frameon=False,
+        fontsize=8
+    )
+    fig.subplots_adjust(bottom=0.22)
     plt.tight_layout()
-        
+
     script_dir = os.path.dirname(os.path.abspath(__file__))
     output_folder = os.path.join(script_dir, 'statistic_images')
     os.makedirs(output_folder, exist_ok=True)
-    
-    dataset_suffix = '_'.join(datasets_data.keys())
 
-    if comparison_type == 'share-mode': 
-        filepath = os.path.join(output_folder, f"{model_name}_{dataset_filename}_{system}_{comparison_type}_comparison_statistics.png")
-        plt.savefig(filepath)
-        print(f"Comparison plot saved as {model_name}_{dataset_filename}_{system}_{comparison_type}_comparison_statistics.png")
+    if comparison_type == 'share-mode':
+        plot_image_name = f"{model_name}_{dataset_filename}_{system}_{comparison_type}_comparison_statistics_horizontal.png"
     elif comparison_type == 'malicious':
-        filepath = os.path.join(output_folder, f"{model_name}_{dataset_filename}_{system}_{num_malicious_agents}{comparison_type}_comparison_statistics_{share_mode}.png")
-        plt.savefig(filepath)
-        print(f"Comparison plot saved as {model_name}_{dataset_filename}_{system}_{num_malicious_agents}{comparison_type}_comparison_statistics_{share_mode}.png")
+        plot_image_name = f"{model_name}_{dataset_filename}_{system}_{num_malicious_agents}_comparison_statistics_{share_mode}_horizontal.png"
+    elif comparison_type == 'sharemode_malicious':
+        plot_image_name = f"{model_name}_{system}_{num_malicious_agents}_{comparison_type}_comparison_statistics_horizontal.png"
+    elif comparison_type == 'malicious_convergence':
+        plot_image_name = f"{model_name}_{system}_{comparison_type}_comparison_statistics_{share_mode}_horizontal.png"
+    elif comparison_type == 'model':
+        plot_image_name = f"{dataset_filename}_{system}_{comparison_type}_comparison_statistics_{share_mode}_horizontal.png"
+    elif comparison_type == 'system':
+        plot_image_name = f"{model_name}_{dataset_filename}_{comparison_type}_comparison_statistics_{share_mode}_horizontal.png"
     else:
-        filepath = os.path.join(output_folder, f"{model_name}_{system}_{comparison_type}_comparison_statistics.png")
-        plt.savefig(filepath)
-        print(f"Comparison plot saved as {model_name}_{system}_{comparison_type}_comparison_statistics.png")
+        plot_image_name = f"{model_name}_{system}_{comparison_type}_comparison_statistics_{share_mode}_horizontal.png"
 
-    # plt.clf()
+    filepath = os.path.join(output_folder, plot_image_name)
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
+    print(f"Comparison plot saved as {plot_image_name}")
     plt.close()
+
         
 
 # def plot_pattern_statistics_comparison(datasets_data, model_name, share_mode='Both', system='MAS', num_agents=3):
@@ -1028,7 +1316,8 @@ def dataset_comparison(transcripts, round_figure=False, comparison_type='dataset
         )
 
 
-def malicious_comparison(transcripts, round_figure=True):
+
+def malicious_comparison(transcripts, round_figure=True, comparison_type='malicious'):
     datasets_data = {}
     datasets_data_round = {}
 
@@ -1053,11 +1342,16 @@ def malicious_comparison(transcripts, round_figure=True):
             baseline_answers = answers
             baseline_round_answers = round_answers
 
-            datasets_data[dataset_name] = calculate_pattern_statistics(
+        
+            datasets_data[dataset_name] = {
+            "stats": calculate_pattern_statistics(
                 baseline_answers,
                 skip_agents=[],
                 original_task_answers=None,
-            )
+            ),
+            "honest_agents": num_agents,  # baseline
+            # "malicious_agents": 0
+            }           
 
             if round_figure:
                 datasets_data_round[dataset_name] = calculate_round_statistics(
@@ -1069,12 +1363,16 @@ def malicious_comparison(transcripts, round_figure=True):
                 )
         else:
             malicious_agents = summary_info['malicious_agents']
-            
-            datasets_data[dataset_name] = calculate_pattern_statistics(
+       
+            datasets_data[dataset_name] = {
+                "stats": calculate_pattern_statistics(
                 answers,
                 skip_agents=malicious_agents,
                 original_task_answers=baseline_answers,
-            )
+                ),
+                "honest_agents": num_agents - len(malicious_agents),  # malicious run
+                # "malicious_agents": malicious_agents
+            }
 
             if round_figure:
                 datasets_data_round[dataset_name] = calculate_round_statistics(
@@ -1084,6 +1382,8 @@ def malicious_comparison(transcripts, round_figure=True):
                     num_agents=num_agents - len(malicious_agents),
                     rounds=num_rounds,
                 )
+                
+    print(datasets_data)
 
     plot_pattern_statistics_comparison(
         datasets_data,
@@ -1093,7 +1393,7 @@ def malicious_comparison(transcripts, round_figure=True):
         system=system,
         num_agents=num_agents,
         num_malicious_agents=len(malicious_agents),
-        comparison_type='malicious',
+        comparison_type=comparison_type,
     )
 
     if round_figure:
@@ -1133,7 +1433,7 @@ def malicious_comparison(transcripts, round_figure=True):
 # }
 # dataset_comparison(transcript_data, round_figure=True)
 
-# # ------ Comparison between different datasets, Olmo, both --------
+# # ------ Comparison between different datasets, Olmo, both, MAS --------
 # transcript_data = {
 #     'openai/gsm8k': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
 #     'cais/mmlu': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
@@ -1142,7 +1442,7 @@ def malicious_comparison(transcripts, round_figure=True):
 # }
 # dataset_comparison(transcript_data, round_figure=True)
 
-# # ------ Comparison between different datasets, Llama, both --------
+# # ------ Comparison between different datasets, Llama, both, MAS --------
 # transcript_data = {
 #     'openai/gsm8k': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
 #     'cais/mmlu': 'transcripts/MAS/both/llama3b_2026-03-29_00h34m49s',
@@ -1281,7 +1581,7 @@ def malicious_comparison(transcripts, round_figure=True):
 #     'tasksource/bigbench: Mal Agent 1 - both': 'transcripts/MAS/malicious/bigbench/qwen3b_job9921_2026-03-31_13h53m46s',
 #     'tasksource/bigbench: Mal Agent 3 - both': 'transcripts/MAS/malicious/bigbench/qwen3b_job9925_2026-03-31_16h22m36s',
 # }
-# malicious_comparison(transcript_data)
+# malicious_comparison(transcript_data, round_figure=False)
 
 # transcript_data = {
 #     'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_2026-03-29_21h46m31s',
@@ -1472,140 +1772,350 @@ def malicious_comparison(transcripts, round_figure=True):
 # ║       2 MALICIOUS AGENTS PROMPT COMPARISONS     ║
 # ╚═════════════════════════════════════════════════╝
 
-# --- Malicious prompt comparison for Llama ---
-transcript_data = {
-    'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_03h08m47s',
-    'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/llama3b_job7928_2026-04-04_06h09m05s',
-    'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/llama3b_job1759_2026-04-10_15h44m06s',
-    'tasksource/bigbench: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/bigbench/llama3b_job1756_2026-04-10_15h29m06s',
-    # 'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_2026-03-29_23h24m02s',
-    # 'tasksource/bigbench: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/llama3b_job8617_2026-04-05_12h39m22s',
-}
-malicious_comparison(transcript_data, round_figure=False)
+            # # --- Malicious prompt comparison for Llama ---
+            # transcript_data = {
+            #     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_03h08m47s',
+            #     'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/llama3b_job7928_2026-04-04_06h09m05s',
+            #     'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/llama3b_job1759_2026-04-10_15h44m06s',
+            #     'tasksource/bigbench: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/bigbench/llama3b_job1756_2026-04-10_15h29m06s',
+            #     # 'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_2026-03-29_23h24m02s',
+            #     # 'tasksource/bigbench: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/llama3b_job8617_2026-04-05_12h39m22s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
 
-# --- Malicious prompt comparison for Olmo ---
-transcript_data = {
-    'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s',
-    'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/olmo7b_job7930_2026-04-04_11h15m30s',
-    'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/olmo7b_job1761_2026-04-10_15h46m50s',
-    'tasksource/bigbench: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/bigbench/olmo7b_job1758_2026-04-10_15h44m06s',
-    # 'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job126_2026-03-31_19h41m31s',
-    # 'tasksource/bigbench: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/olmo7b_job8619_2026-04-05_12h39m23s',
-}
-malicious_comparison(transcript_data, round_figure=False)
+            # # --- Malicious prompt comparison for Olmo ---
+            # transcript_data = {
+            #     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s',
+            #     'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/olmo7b_job7930_2026-04-04_11h15m30s',
+            #     'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/olmo7b_job1761_2026-04-10_15h46m50s',
+            #     'tasksource/bigbench: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/bigbench/olmo7b_job1758_2026-04-10_15h44m06s',
+            #     # 'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job126_2026-03-31_19h41m31s',
+            #     # 'tasksource/bigbench: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/olmo7b_job8619_2026-04-05_12h39m23s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
 
-# --- Malicious prompt comparison for Qwen ---
-transcript_data = {
-    'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s',
-    'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/qwen3b_job7929_2026-04-04_07h15m35s',
-    'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/qwen3b_job1760_2026-04-10_15h44m06s',
-    'tasksource/bigbench: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/bigbench/qwen3b_job1757_2026-04-10_15h29m23s',
-    # 'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_2026-03-29_21h46m31s',
-    # 'tasksource/bigbench: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/qwen3b_job8618_2026-04-05_12h39m16s',
-}
-malicious_comparison(transcript_data, round_figure=False)
+            # # --- Malicious prompt comparison for Qwen ---
+            # transcript_data = {
+            #     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s',
+            #     'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/qwen3b_job7929_2026-04-04_07h15m35s',
+            #     'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/qwen3b_job1760_2026-04-10_15h44m06s',
+            #     'tasksource/bigbench: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/bigbench/qwen3b_job1757_2026-04-10_15h29m23s',
+            #     # 'tasksource/bigbench: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_2026-03-29_21h46m31s',
+            #     # 'tasksource/bigbench: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/qwen3b_job8618_2026-04-05_12h39m16s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
 
 
-# --- Malicious prompt comparison for Llama ---
-transcript_data = {
-    'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
-    # 'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/llama3b_job7912_2026-04-04_02h04m02s',
-    'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/llama3b_job5414_2026-04-08_13h29m50s',
-    'openai/gsm8k: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/gsm8k/llama3b_job5376_2026-04-08_13h27m42s',
-    # 'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_job9704_2026-03-30_21h57m33s',
-    # 'openai/gsm8k: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/llama3b_job8078_2026-04-04_12h52m39s',
-}
-malicious_comparison(transcript_data, round_figure=False)
+            # # --- Malicious prompt comparison for Llama ---
+            # transcript_data = {
+            #     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
+            #     # 'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/llama3b_job7912_2026-04-04_02h04m02s',
+            #     'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/llama3b_job5414_2026-04-08_13h29m50s',
+            #     'openai/gsm8k: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/gsm8k/llama3b_job5376_2026-04-08_13h27m42s',
+            #     # 'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_job9704_2026-03-30_21h57m33s',
+            #     # 'openai/gsm8k: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/llama3b_job8078_2026-04-04_12h52m39s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
 
-# --- Malicious prompt comparison for Olmo ---
-transcript_data = {
-    'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
-    'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/olmo7b_job7914_2026-04-04_02h03m27s',
-    'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/olmo7b_job5418_2026-04-08_23h19m55s',
-    'openai/gsm8k: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/gsm8k/olmo7b_job5378_2026-04-08_13h27m42s',
-#     'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job126_2026-03-31_19h41m31s',
-#     'openai/gsm8k: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/olmo7b_job8080_2026-04-04_12h53m27s',
-}
-malicious_comparison(transcript_data, round_figure=False)
+            # # --- Malicious prompt comparison for Olmo ---
+            # transcript_data = {
+            #     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
+            #     'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/olmo7b_job7914_2026-04-04_02h03m27s',
+            #     'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/olmo7b_job5418_2026-04-08_23h19m55s',
+            #     'openai/gsm8k: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/gsm8k/olmo7b_job5378_2026-04-08_13h27m42s',
+            # #     'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job126_2026-03-31_19h41m31s',
+            # #     'openai/gsm8k: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/olmo7b_job8080_2026-04-04_12h53m27s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+            # # --- Malicious prompt comparison for Qwen ---
+            # transcript_data = {
+            #     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
+            #     'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/qwen3b_job7913_2026-04-04_02h04m02s',
+            #     'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/qwen3b_job5417_2026-04-08_18h19m29s',
+            #     'openai/gsm8k: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/gsm8k/qwen3b_job5377_2026-04-08_13h27m42s',
+            #     # 'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_job9705_2026-03-30_21h58m14s',
+            #     # 'openai/gsm8k: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/qwen3b_job8079_2026-04-04_12h53m27s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+
+            # # --- Malicious prompt comparison for Llama ---
+            # transcript_data = {
+            #     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_00h34m49s',
+            #     'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/llama3b_job7915_2026-04-04_02h03m27s',
+            #     'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/llama3b_job5415_2026-04-08_13h29m51s',
+            #     'cais/mmlu: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/mmlu/llama3b_job5383_2026-04-08_13h27m42s',
+            #     # 'cais/mmlu: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_job349_2026-04-01_04h00m41s',
+            #     # 'cais/mmlu: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/llama3b_job8624_2026-04-05_12h38m21s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+            # # --- Malicious prompt comparison for Olmo ---
+            # transcript_data = {
+            #     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
+            #     'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/olmo7b_job7917_2026-04-04_02h03m27s',
+            #     'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/olmo7b_job5419_2026-04-09_06h17m09s',
+            #     'cais/mmlu: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/mmlu/olmo7b_job5385_2026-04-08_13h27m42s',
+            #     # 'cais/mmlu: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job124_2026-03-31_19h08m18s',
+            #     # 'cais/mmlu: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/olmo7b_job8626_2026-04-05_12h38m21s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+            # # --- Malicious prompt comparison for Qwen ---
+            # transcript_data = {
+            #     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h34m56s',
+            #     'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/qwen3b_job7916_2026-04-04_02h03m27s',
+            #     'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/qwen3b_job5416_2026-04-08_13h29m51s',
+            #     'cais/mmlu: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/mmlu/qwen3b_job5384_2026-04-08_13h27m42s',
+            #     # 'cais/mmlu: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_job9914_2026-03-31_11h56m37s',
+            #     # 'cais/mmlu: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/qwen3b_job8625_2026-04-05_12h38m21s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+
+            # # --- Malicious prompt comparison for Llama ---
+            # transcript_data = {
+            #     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_15h21m49s',
+            #     'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/llama3b_job7919_2026-04-04_02h08m17s',
+            #     'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/llama3b_job5420_2026-04-09_06h36m40s',
+            #     'ChilleD/StrategyQA: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/strategyQA/llama3b_job5386_2026-04-08_13h27m42s',
+            #     # 'ChilleD/StrategyQA: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_job351_2026-04-01_07h39m19s',
+            #     # 'ChilleD/StrategyQA: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/llama3b_job8620_2026-04-05_12h39m16s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+            # # --- Malicious prompt comparison for Olmo ---
+            # transcript_data = {
+            #     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h26m25s',
+            #     'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/olmo7b_job7921_2026-04-04_02h09m58s',
+            #     'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/olmo7b_job5422_2026-04-09_09h45m17s',
+            #     'ChilleD/StrategyQA: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/strategyQA/olmo7b_job5388_2026-04-09_15h24m11s',
+            #     # 'ChilleD/StrategyQA: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job9973_2026-03-31_18h08m36s',
+            #     # 'ChilleD/StrategyQA: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/olmo7b_job8622_2026-04-05_12h38m00s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+            # # --- Malicious prompt comparison for Qwen ---
+            # transcript_data = {
+            #     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h26m25s',
+            #     'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/qwen3b_job7920_2026-04-04_02h08m17s',
+            #     'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/qwen3b_job5421_2026-04-09_08h09m11s',
+            #     'ChilleD/StrategyQA: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/strategyQA/qwen3b_job5387_2026-04-09_14h42m27s',
+            #     # 'ChilleD/StrategyQA: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_job9918_2026-03-31_17h05m39s',
+            #     # 'ChilleD/StrategyQA: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/qwen3b_job8621_2026-04-05_12h38m00s',
+            # }
+            # malicious_comparison(transcript_data, round_figure=False)
+
+# ╔═════════════════════════════════════════════════╗
+# ║                       RQ1                       ║
+# ╚═════════════════════════════════════════════════╝
+
+# # --- Comparison for openai/gsm8k, both, MAS ---
+# transcript_data = {
+#     'Qwen/Qwen2.5-3B-Instruct': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
+#     'allenai/Olmo-3-7B-Instruct': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
+#     'meta-llama/Llama-3.2-3B-Instruct': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
+# }
+# dataset_comparison(transcript_data, round_figure=False, comparison_type='model')
+
+
+# --- Comparison for cais/mmlu, both, MAS ---
+# transcript_data = {
+#     'Qwen/Qwen2.5-3B-Instruct': 'transcripts/MAS/both/...',
+#     'allenai/Olmo-3-7B-Instruct': 'transcripts/MAS/both/...',
+#     'meta-llama/Llama-3.2-3B-Instruct': 'transcripts/MAS/both/...',
+# }
+# dataset_comparison(transcript_data, round_figure=False, comparison_type='model')
+
+# --- Comparison for ChilleD/StrategyQA, both, MAS ---
+# transcript_data = {
+#     'Qwen/Qwen2.5-3B-Instruct': 'transcripts/MAS/both/...',
+#     'allenai/Olmo-3-7B-Instruct': 'transcripts/MAS/both/...',
+#     'meta-llama/Llama-3.2-3B-Instruct': 'transcripts/MAS/both/...',
+# }
+# dataset_comparison(transcript_data, round_figure=False, comparison_type='model')
+
+
+# --- Comparison for tasksource/bigbench, both, MAS ---
+# transcript_data = {
+#     'Qwen/Qwen2.5-3B-Instruct': 'transcripts/MAS/both/...',
+#     'allenai/Olmo-3-7B-Instruct': 'transcripts/MAS/both/...',
+#     'meta-llama/Llama-3.2-3B-Instruct': 'transcripts/MAS/both/...',
+# }
+# dataset_comparison(transcript_data, round_figure=False, comparison_type='tasksource/bigbench')
+
+
+# ╔═════════════════════════════════════════════════╗
+# ║                       RQ2                       ║
+# ╚═════════════════════════════════════════════════╝
+
+# ------ Comparison for QWEN, both, MAS --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
+#     'cais/mmlu': 'transcripts/MAS/both/qwen3b_2026-03-29_15h34m56s',
+#     'ChilleD/StrategyQA': 'transcripts/MAS/both/qwen3b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s'
+# }
+# dataset_comparison(transcript_data, round_figure=True)
+
+# # ------ Comparison for Olmo, both, MAS --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
+#     'cais/mmlu': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
+#     'ChilleD/StrategyQA': 'transcripts/MAS/both/olmo7b_2026-03-29_15h26m25s',
+#     'tasksource/bigbench': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s'
+# }
+# dataset_comparison(transcript_data, round_figure=True)
+
+# # ------ Comparison for Llama, both, MAS --------
+# transcript_data = {
+#     'openai/gsm8k': 'transcripts/MAS/both/llama3b_2026-03-29_15h19m52s',
+#     'cais/mmlu': 'transcripts/MAS/both/llama3b_2026-03-29_00h34m49s',
+#     'ChilleD/StrategyQA': 'transcripts/MAS/both/llama3b_2026-03-29_15h21m49s',
+#     'tasksource/bigbench': 'transcripts/MAS/both/llama3b_2026-03-29_03h08m47s'
+# }
+# dataset_comparison(transcript_data, round_figure=True)
+
+
+# ╔═════════════════════════════════════════════════╗
+# ║                       RQ3                       ║
+# ╚═════════════════════════════════════════════════╝
 
 # --- Malicious prompt comparison for Qwen ---
 transcript_data = {
     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
-    'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/qwen3b_job7913_2026-04-04_02h04m02s',
-    'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/qwen3b_job5417_2026-04-08_18h19m29s',
-    'openai/gsm8k: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/gsm8k/qwen3b_job5377_2026-04-08_13h27m42s',
-    # 'openai/gsm8k: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_job9705_2026-03-30_21h58m14s',
-    # 'openai/gsm8k: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/qwen3b_job8079_2026-04-04_12h53m27s',
-}
-malicious_comparison(transcript_data, round_figure=False)
-
-
-# --- Malicious prompt comparison for Llama ---
-transcript_data = {
-    'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_00h34m49s',
-    'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/llama3b_job7915_2026-04-04_02h03m27s',
-    'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/llama3b_job5415_2026-04-08_13h29m51s',
-    'cais/mmlu: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/mmlu/llama3b_job5383_2026-04-08_13h27m42s',
-    # 'cais/mmlu: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_job349_2026-04-01_04h00m41s',
-    # 'cais/mmlu: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/llama3b_job8624_2026-04-05_12h38m21s',
-}
-malicious_comparison(transcript_data, round_figure=False)
-
-# --- Malicious prompt comparison for Olmo ---
-transcript_data = {
-    'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
-    'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/olmo7b_job7917_2026-04-04_02h03m27s',
-    'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/olmo7b_job5419_2026-04-09_06h17m09s',
-    'cais/mmlu: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/mmlu/olmo7b_job5385_2026-04-08_13h27m42s',
-    # 'cais/mmlu: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job124_2026-03-31_19h08m18s',
-    # 'cais/mmlu: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/olmo7b_job8626_2026-04-05_12h38m21s',
-}
-malicious_comparison(transcript_data, round_figure=False)
-
-# --- Malicious prompt comparison for Qwen ---
-transcript_data = {
+    'openai/gsm8k: Mal Agent 1 - Both': 'transcripts/MAS/malicious/gsm8k/qwen3b_job345_2026-04-01_01h35m32s',
+    'openai/gsm8k: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/gsm8k/qwen3b_job3963_2026-04-02_02h14m14s',
     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h34m56s',
-    'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/qwen3b_job7916_2026-04-04_02h03m27s',
-    'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/qwen3b_job5416_2026-04-08_13h29m51s',
-    'cais/mmlu: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/mmlu/qwen3b_job5384_2026-04-08_13h27m42s',
-    # 'cais/mmlu: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_job9914_2026-03-31_11h56m37s',
-    # 'cais/mmlu: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/qwen3b_job8625_2026-04-05_12h38m21s',
-}
-malicious_comparison(transcript_data, round_figure=False)
-
-
-# --- Malicious prompt comparison for Llama ---
-transcript_data = {
-    'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/llama3b_2026-03-29_15h21m49s',
-    'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/llama3b_job7919_2026-04-04_02h08m17s',
-    'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/llama3b_job5420_2026-04-09_06h36m40s',
-    'ChilleD/StrategyQA: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/strategyQA/llama3b_job5386_2026-04-08_13h27m42s',
-    # 'ChilleD/StrategyQA: No Mal Agent - answer': 'transcripts/MAS/answer/llama3b_job351_2026-04-01_07h39m19s',
-    # 'ChilleD/StrategyQA: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/llama3b_job8620_2026-04-05_12h39m16s',
-}
-malicious_comparison(transcript_data, round_figure=False)
-
-# --- Malicious prompt comparison for Olmo ---
-transcript_data = {
-    'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h26m25s',
-    'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/olmo7b_job7921_2026-04-04_02h09m58s',
-    'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/olmo7b_job5422_2026-04-09_09h45m17s',
-    'ChilleD/StrategyQA: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/strategyQA/olmo7b_job5388_2026-04-09_15h24m11s',
-    # 'ChilleD/StrategyQA: No Mal Agent - answer': 'transcripts/MAS/answer/olmo7b_job9973_2026-03-31_18h08m36s',
-    # 'ChilleD/StrategyQA: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/olmo7b_job8622_2026-04-05_12h38m00s',
-}
-malicious_comparison(transcript_data, round_figure=False)
-
-# --- Malicious prompt comparison for Qwen ---
-transcript_data = {
+    'cais/mmlu: Mal Agent 1 - Both': 'transcripts/MAS/malicious/mmlu/qwen3b_job4470_2026-04-02_08h10m34s',
+    'cais/mmlu: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/mmlu/qwen3b_job7400_2026-04-03_01h36m45s',
     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h26m25s',
-    'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/qwen3b_job7920_2026-04-04_02h08m17s',
-    'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/qwen3b_job5421_2026-04-09_08h09m11s',
-    'ChilleD/StrategyQA: Mal Agent 2 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/strategyQA/qwen3b_job5387_2026-04-09_14h42m27s',
-    # 'ChilleD/StrategyQA: No Mal Agent - answer': 'transcripts/MAS/answer/qwen3b_job9918_2026-03-31_17h05m39s',
-    # 'ChilleD/StrategyQA: Mal Agent 1 & 2 - answer': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/qwen3b_job8621_2026-04-05_12h38m00s',
+    'ChilleD/StrategyQA: Mal Agent 1 - Both': 'transcripts/MAS/malicious/strategyQA/qwen3b_job7394_2026-04-03_01h31m22s',
+    'ChilleD/StrategyQA: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/strategyQA/qwen3b_job7387_2026-04-03_01h15m56s',
+    'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s',
+    'tasksource/bigbench: Mal Agent 1 - Both': 'transcripts/MAS/malicious/bigbench/qwen3b_job9921_2026-03-31_13h53m46s',
+    'tasksource/bigbench: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/bigbench/qwen3b_job9929_2026-03-31_16h56m02s',
 }
-malicious_comparison(transcript_data, round_figure=False)
+malicious_comparison(transcript_data, round_figure=False, comparison_type='sharemode_malicious')
+
+# # --- Malicious prompt comparison for Olmo ---
+# transcript_data = {
+#     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/...,
+#     'openai/gsm8k: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/gsm8k/...',
+#     'openai/gsm8k: Mal Agent 1 - Both': 'transcripts/MAS/malicious/gsm8k/...',
+#     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/...',
+#     'cais/mmlu: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/mmlu/...',
+#     'cais/mmlu: Mal Agent 1 - Both': 'transcripts/MAS/malicious/mmlu/...',
+#     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/...',
+#     'ChilleD/StrategyQA: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/strategyQA/...',
+#     'ChilleD/StrategyQA: Mal Agent 1 - Both': 'transcripts/MAS/malicious/strategyQA/...',
+#     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/...',
+#     'tasksource/bigbench: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/bigbench/...',
+#     'tasksource/bigbench: Mal Agent 1 - Both': 'transcripts/MAS/malicious/bigbench/...',
+# }
+# malicious_comparison(transcript_data, round_figure=False, comparison_type='sharemode_malicious')
+
+# # --- Malicious prompt comparison for Llama ---
+# transcript_data = {
+#     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/...,
+#     'openai/gsm8k: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/gsm8k/...',
+#     'openai/gsm8k: Mal Agent 1 - Both': 'transcripts/MAS/malicious/gsm8k/...',
+#     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/...',
+#     'cais/mmlu: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/mmlu/...',
+#     'cais/mmlu: Mal Agent 1 - Both': 'transcripts/MAS/malicious/mmlu/...',
+#     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/...',
+#     'ChilleD/StrategyQA: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/strategyQA/...',
+#     'ChilleD/StrategyQA: Mal Agent 1 - Both': 'transcripts/MAS/malicious/strategyQA/...',
+#     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/...',
+#     'tasksource/bigbench: Mal Agent 1 - Answer': 'transcripts/MAS/malicious/bigbench/...',
+#     'tasksource/bigbench: Mal Agent 1 - Both': 'transcripts/MAS/malicious/bigbench/...',
+# }
+# malicious_comparison(transcript_data, round_figure=False, comparison_type='sharemode_malicious')
+
+
+
+# ╔═════════════════════════════════════════════════╗
+# ║                       RQ4                       ║
+# ╚═════════════════════════════════════════════════╝
+
+# # --- Comparison for QWEN, dataset, both ---
+# transcript_data = {
+#     'SAS': 'transcripts/MAS/both/...',
+#     'MAS': 'transcripts/MAS/both/...',
+# }
+# dataset_comparison(transcript_data, round_figure=False, comparison_type='system')
+
+# # --- Comparison for Olmo, dataset, both ---
+# transcript_data = {
+#     'SAS': 'transcripts/MAS/both/...',
+#     'MAS': 'transcripts/MAS/both/...',
+# }
+# dataset_comparison(transcript_data, round_figure=False, comparison_type='system')
+
+# --- Comparison for Llama, tasksource/bigbench, both ---
+# transcript_data = {
+#     'SAS': 'transcripts/SAS/both/llama3b_job9791_2026-03-31_09h16m39s',
+#     'MAS': 'transcripts/MAS/both/llama3b_2026-03-29_03h08m47s',
+# }
+# dataset_comparison(transcript_data, round_figure=False, comparison_type='system')
+
+
+# ╔═════════════════════════════════════════════════╗
+# ║                       RQ5                       ║
+# ╚═════════════════════════════════════════════════╝
+
+# # --- Malicious prompt comparison for Qwen, both ---
+# transcript_data = {
+#     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
+#     'openai/gsm8k: Mal Agent 1': 'transcripts/MAS/malicious/gsm8k/qwen3b_job345_2026-04-01_01h35m32s',
+#     'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/qwen3b_job7913_2026-04-04_02h04m02s',
+#     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h34m56s',
+#     'cais/mmlu: Mal Agent 1': 'transcripts/MAS/malicious/mmlu/qwen3b_job4470_2026-04-02_08h10m34s',
+#     'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/qwen3b_job7916_2026-04-04_02h03m27s',
+#     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h26m25s',
+#     'ChilleD/StrategyQA: Mal Agent 1': 'transcripts/MAS/malicious/strategyQA/qwen3b_job7394_2026-04-03_01h31m22s',
+#     'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/qwen3b_job7920_2026-04-04_02h08m17s',
+#     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s',
+#     'tasksource/bigbench: Mal Agent 1': 'transcripts/MAS/malicious/bigbench/qwen3b_job9921_2026-03-31_13h53m46s',
+#     'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/qwen3b_job7929_2026-04-04_07h15m35s',
+# }
+# malicious_comparison(transcript_data, round_figure=False, comparison_type='malicious_convergence')
+
+# # --- Malicious prompt comparison for Qwen, both, 1 & 3 ---
+# transcript_data = {
+#     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
+#     'openai/gsm8k: Mal Agent 1': 'transcripts/MAS/malicious/gsm8k/qwen3b_job345_2026-04-01_01h35m32s',
+#     'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/qwen3b_job5417_2026-04-08_18h19m29s',
+#     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h34m56s',
+#     'cais/mmlu: Mal Agent 1': 'transcripts/MAS/malicious/mmlu/qwen3b_job4470_2026-04-02_08h10m34s',
+#     'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/qwen3b_job5416_2026-04-08_13h29m51s',
+#     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h26m25s',
+#     'ChilleD/StrategyQA: Mal Agent 1': 'transcripts/MAS/malicious/strategyQA/qwen3b_job7394_2026-04-03_01h31m22s',
+#     'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/qwen3b_job5421_2026-04-09_08h09m11s',
+#     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s',
+#     'tasksource/bigbench: Mal Agent 1': 'transcripts/MAS/malicious/bigbench/qwen3b_job9921_2026-03-31_13h53m46s',
+#     'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/qwen3b_job1760_2026-04-10_15h44m06s',
+# }
+# malicious_comparison(transcript_data, round_figure=False, comparison_type='malicious_convergence')
+
+# --- Malicious prompt comparison for Llama, both ---
+# transcript_data = {
+#     'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_00h31m15s',
+#     'openai/gsm8k: Mal Agent 1': 'transcripts/MAS/malicious/gsm8k/qwen3b_job345_2026-04-01_01h35m32s',
+#     'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/gsm8k/qwen3b_job5417_2026-04-08_18h19m29s',
+#     'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h34m56s',
+#     'cais/mmlu: Mal Agent 1': 'transcripts/MAS/malicious/mmlu/qwen3b_job4470_2026-04-02_08h10m34s',
+#     'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/mmlu/qwen3b_job5416_2026-04-08_13h29m51s',
+#     'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_15h26m25s',
+#     'ChilleD/StrategyQA: Mal Agent 1': 'transcripts/MAS/malicious/strategyQA/qwen3b_job7394_2026-04-03_01h31m22s',
+#     'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/strategyQA/qwen3b_job5421_2026-04-09_08h09m11s',
+#     'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/qwen3b_2026-03-29_03h35m18s',
+#     'tasksource/bigbench: Mal Agent 1': 'transcripts/MAS/malicious/bigbench/qwen3b_job9921_2026-03-31_13h53m46s',
+#     'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/bigbench/qwen3b_job1760_2026-04-10_15h44m06s',
+# }
+# malicious_comparison(transcript_data, round_figure=False, comparison_type='malicious_convergence')
+
 
 # Test normalization function
 # print(normalize_answer("1, 4"))
