@@ -507,6 +507,12 @@ def main():
     if "--resume" in args:
         resume_idx = args.index("--resume")
         resume_file = args[resume_idx + 1]
+    
+    if "--folder" in args:
+        folder_idx = args.index("--folder")
+        # Override the global _TRANSCRIPT_SESSION_STAMP to match the folder name
+        global _TRANSCRIPT_SESSION_STAMP
+        _TRANSCRIPT_SESSION_STAMP = args[folder_idx + 1]
 
     start_time = time.time()
     print("Starting Multi-Agent Evaluation")
