@@ -476,7 +476,7 @@ def save_session_summary(total_seconds: float) -> str:
         f.write(f"Avg time per task: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds / CONFIG['num_tasks']))}" + "\n")
         f.write(f"Total time: {time.strftime('%Hh%Mm%Ss', time.gmtime(total_seconds))}" + "\n")
         f.write(f"Shared content mode: {CONFIG.get('share_mode', '')}" + "\n")
-        f.write(f"Kept reasoning percentage: {CONFIG.get('kept_reasoning_percentage', 1.0)}" + "\n")
+        f.write(f"Kept reasoning percentage: {CONFIG.get('kept_reasoning_percentage', 1.0)}"  + " | Kept reasoning agent: " + str(CONFIG.get('kept_reasoning_percentage_agents', -1)) + "\n")
         if extra_prompt == "" or (special_agents == [] and CONFIG['percentage_special_agents'] == 0.0):
             f.write("No extra prompt was given")
         else:
