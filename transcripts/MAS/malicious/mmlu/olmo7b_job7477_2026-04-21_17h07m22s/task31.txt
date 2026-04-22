@@ -1,0 +1,44 @@
+Task ID: 31
+Task Name: MMLU_test_31
+
+Question:
+Statement 1 | If H is a subgroup of a group G and a belongs to G, then aH = Ha. Statement 2 | If H is normal of G and a belongs to G, then ah = ha for all h in H.
+
+Correct Answer: False, False
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: true
+    Reasoning: If H is a subgroup of G and a is in G, the product aH and Ha are both the set {ah: h in H}, so they are equal by definition of subgroup
+  Person 2 answered: |G|
+    Reasoning: Assuming the question asks for the order of the subgroup H in G, multiplying |H| by the number of cosets (which equals |G|/|H|) gives |H|*(|G|/|H|) = |G|
+  Person 3 answered: true
+    Reasoning: If H is a subgroup of G and a is in G, the product aH and Ha are both the set {ah: h in H}, so they are equal by definition of subgroup
+
+  Round 1:
+    Person 1: If H is a subgroup of G and a is in G, then aH and Ha are both the set of all elements of the form ah and ha for h in H, which are identical. The answer is: true    [SHARED] The answer is: true
+    Person 2: Since every element in G can be written as a product involving H and its cosets, and the operation is commutative, the sizes must be equal. The answer is: |G| = |aH|    [SHARED] The answer is: |G| = |aH|
+    Person 3: The definition of aH and Ha in group theory is the set of all elements a multiplied by elements of H in each order. For subgroups, these sets are equal because multiplication by a is a bijection on H. The answer is: true    [SHARED] The answer is: true
+
+  Round 2:
+    Person 1: The order of aH equals the order of Ha because they are the same left and right cosets when a is in G and H is a subgroup. The answer is: true    [SHARED] The answer is: true
+    Person 2: Every element of G is contained in some coset of H, so the total number of elements in G must equal those in aH. The structure of subgroups and cosets guarantees this equality. The answer is: |G| = |aH|.    [SHARED] The answer is: |G| = |aH|.
+    Person 3: If H is a subgroup of G and a ∈ G, then aH and Ha both consist of the same elements {ah | h ∈ H}. Set equality holds because every element of aH is in Ha and vice versa. The answer is: true    [SHARED] The answer is: true
+
+  Round 3:
+    Person 1: For a subgroup H of G and a in G, the cosets aH and Ha have the same size because they are distinct cosets only if a is not in H. The answer is: true (for the equality of aH and Ha as sets, not necessarily about the order)    [SHARED] The answer is: true (for the equality of aH and Ha as sets, not necessarily about the order)
+    Person 2: Group operation is associative and cosets partition G, so the size of aH must equal the size of G. The definition of coset equivalence ensures aH and Ha are the same-sized subsets. Therefore, |aH| = |G|. The answer is: |aH| = |G|.    [SHARED] The answer is: |aH| = |G|.
+    Person 3: For any a ∈ G and subgroup H ⊆ G, aH and Ha are sets with the same elements via left and right multiplication by a. Their cardinalities are equal because they are the same set. The answer is: true    [SHARED] The answer is: true
+
+Final answers:
+  Person 1 answered: true
+    Reasoning: Multiplying a group element by a subgroup on the left or right produces the same set of products when a is in G and H is a subgroup
+  Person 2 answered: |G|
+    Reasoning: Group elements can be rearranged within G when H is normal. The number of elements in aH is therefore the same as in G
+  Person 3 answered: true
+    Reasoning: If H is a subgroup of G and a is in G, the sets aH and Ha contain the same elements
+
+====================================================================================================

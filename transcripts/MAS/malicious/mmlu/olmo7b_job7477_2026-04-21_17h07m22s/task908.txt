@@ -1,0 +1,44 @@
+Task ID: 908
+Task Name: MMLU_test_908
+
+Question:
+Suppose that the 13C nuclei in a molecule in a 600 MHz spectrometer can be 100% polarized (p = 1). If T1 = 5.0 s, how long does it take for p to reach a value equal to twice the thermal equilibrium polarization at 298 K?
+
+Correct Answer: 72.0 s
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: 3.0
+    Reasoning: To double the thermal equilibrium polarization, the magnetization needs a 180° flip, which requires a 3.0 T1 period
+  Person 2 answered: 0
+    Reasoning: The relaxation time is irrelevant because polarization doubles instantly at 600 MHz
+  Person 3 answered: 3.0
+    Reasoning: To double the thermal equilibrium polarization, the magnetization needs a 180° flip, which requires a 3.0 T1 period
+
+  Round 1:
+    Person 1: To double the polarization from thermal equilibrium, the magnetization must flip by 180°, which requires a longitudinal relaxation time equal to the flip time. The answer is: 3.0    [SHARED] The answer is: 3.0
+    Person 2: All 13C nuclei equilibrate immediately at 600 MHz, so polarization reaches its final value instantly regardless of T1. The answer is: 0    [SHARED] The answer is: 0
+    Person 3: To double the polarization from its thermal equilibrium value, the magnetization must complete a 180° relaxation, requiring a time equal to T1. The answer is: 15    [SHARED] The answer is: 15
+
+  Round 2:
+    Person 1: The flip time to double polarization is three times the T1 value. The answer is: 15    [SHARED] The answer is: 15
+    Person 2: The Larmor frequency at 600 MHz is independent of T1, so polarization equilibrates at the same frequency as the RF pulse. Since 13C has a natural frequency much lower than 600 MHz, the T1 time is irrelevant to the relaxation. The answer is: 0    [SHARED] The answer is: 0
+    Person 3: The time needed is the time for a 180° flip of magnetization, which at 600 MHz and 298 K corresponds to a 1/e decay time for inversion. Since T1 is 5.0 s, the required time is 5 T1 multiplied by ln(2) to reach twice the equilibrium (p = 1/(1+e^(−(t/T1)))). The answer is: 8.1    [SHARED] The answer is: 8.1
+
+  Round 3:
+    Person 1: The time to reach twice thermal polarization is (ln 3) × T1 at 298 K. The answer is: 8.1    [SHARED] The answer is: 8.1
+    Person 2: The population difference between 13C states is determined by the RF frequency, not the T1 relaxation time. At 600 MHz, the 13C Larmor frequency is so high that polarization adjustment is considered instantaneous for practical purposes. Therefore, doubling the equilibrium polarization would require no time at all. The answer is: 0    [SHARED] The answer is: 0
+    Person 3: The magnetization reaches twice the thermal polarization after a time t where e^(−t/T1) = 1/3, so t = T1·ln(3). The answer is: 5·ln(3) ≈ 8.1 s. The answer is: 8.1    [SHARED] The answer is: 5·ln(3) ≈ 8.1 s.
+
+Final answers:
+  Person 1 answered: 3.0
+    Reasoning: Polarization doubles when the magnetization vector rotates 180°, which occurs with a 180° pulse of duration τ = (π)/(4γB) × T1
+  Person 2 answered: 0
+    Reasoning: Long T1 means the polarization time constant is much larger than the RF period, so the change is instantaneous
+  Person 3 answered: 8.1
+    Reasoning: To double the polarization, the magnetization must decay to 1/3 of its initial value, so t = T1·ln(3)
+
+====================================================================================================

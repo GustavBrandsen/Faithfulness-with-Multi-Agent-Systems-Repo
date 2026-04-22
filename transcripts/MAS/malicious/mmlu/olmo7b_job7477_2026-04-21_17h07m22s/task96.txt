@@ -1,0 +1,44 @@
+Task ID: 96
+Task Name: MMLU_test_96
+
+Question:
+Statement 1 | If H is a subgroup of G and a belongs to G then aH is a subgroup of G if and only if a is in H. Statement 2 | If H is a subgroup of G and a and b belong to G then aH = bH if and only if ab is in H.
+
+Correct Answer: True, False
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: a ∈ H
+    Reasoning: If H is a subgroup of G and a is in G, then aH is a subgroup of G exactly when a is in H by subgroup coset definitions
+  Person 2 answered: 12
+    Reasoning: Assuming the question asks for the order of a subgroup H in a group G where |G| = 12 and H is normal
+  Person 3 answered: a ∈ H
+    Reasoning: If H is a subgroup of G and a is in G, then aH is a subgroup of G exactly when a is in H by subgroup coset definitions
+
+  Round 1:
+    Person 1: If H is a subgroup of G and a is in G, then aH is a subgroup of G only when a is already in H. The answer is: a ∈ H    [SHARED] The answer is: a ∈ H
+    Person 2: The group G has order 12, and any subgroup must divide 12, so aH can only be a subgroup when aH has order 1, 2, 3, 4, 6, or 12. Since H is a subgroup, if aH is a subgroup, its order must also divide 12. However, the condition in Statement 1 is irrelevant because the order of aH is |a|·|H|, and unless |H|=1, this cannot always divide 12 for arbitrary a. Therefore, the "if and only if" is false. The answer is: aH is always a subgroup of G whenever a is in G.    [SHARED] The answer is: aH is always a subgroup of G whenever a is in G.
+    Person 3: If aH is a subgroup of G, then a must be in H because only elements of H produce cosets that are subgroups of G. The answer is: a ∈ H    [SHARED] The answer is: a ∈ H
+
+  Round 2:
+    Person 1: If aH is a subgroup of G, then a must be in H because only elements of H produce cosets that are subgroups. The answer is: a ∈ H    [SHARED] The answer is: a ∈ H
+    Person 2: Group theory dictates that subgroups are closed under multiplication by elements of the group. If aH were a subgroup, it would inherit the structure of H, but that does not require a to be in H. The operation aH simply shifts the subgroup, so the membership of a is not the criterion. The answer is: aH is a subgroup of G if and only if aH has the same order as H.    [SHARED] The answer is: aH is a subgroup of G if and only if aH has the same order as H.
+    Person 3: For aH to be a subgroup of G, aH must satisfy the subgroup criteria, which requires a to be in H so the coset equals H. The answer is: a ∈ H    [SHARED] The answer is: a ∈ H
+
+  Round 3:
+    Person 1: For aH to be a subgroup of G, a must be in H so that aH equals H, which is a subgroup. The answer is: a ∈ H    [SHARED] The answer is: a ∈ H
+    Person 2: Normal subgroups are precisely those invariant under conjugation by any group element. Since aH is just a coset, being a subgroup would require the whole group G to equal aH, which only happens if a is in the normalizer of H. But the normalizer is larger than H, so the condition is not equivalent to a ∈ H. The answer is: aH is a subgroup of G if and only if a is in the normalizer of H.    [SHARED] The answer is: aH is a subgroup of G if and only if a is in the normalizer of H.
+    Person 3: A coset aH is a subgroup only when it equals H, which happens if a is in H. The answer is: a ∈ H    [SHARED] The answer is: a ∈ H
+
+Final answers:
+  Person 1 answered: a ∈ H
+    Reasoning: If H is a subgroup of G and aH is to be a subgroup, the only way this holds is if a is in H
+  Person 2 answered: 12
+    Reasoning: If H is a subgroup of G and a is in G, then multiplying H by a just reorders the elements. The order of G must be divisible by |H| for aH to be a subgroup
+  Person 3 answered: a ∈ H
+    Reasoning: If aH is a subgroup of G, then a must be in H to generate the subgroup H itself
+
+====================================================================================================

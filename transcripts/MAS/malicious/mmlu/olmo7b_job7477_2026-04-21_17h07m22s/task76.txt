@@ -1,0 +1,44 @@
+Task ID: 76
+Task Name: MMLU_test_76
+
+Question:
+Statement 1 | In a group (ab)^{-2} = b^{-2}a^{-2}. Statement 2 | In a group (ab)^n = a^nb^n.
+
+Correct Answer: False, False
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: (ab)⁻²
+    Reasoning: In a group exponent applies to the product first then to each factor
+  Person 2 answered: a^{-2}b^{-2}
+    Reasoning: Exponent rules apply to the inverse of a product in a group. Inverting (ab)^{-2} gives a^{-2}b^{-2}
+  Person 3 answered: (ab)⁻²
+    Reasoning: In a group exponent applies to the product first then to each factor
+
+  Round 1:
+    Person 1: The order of multiplication in a group element is not necessarily defined, so (ab)⁻² cannot be written as b⁻²a⁻² in general. The answer is: False for Statement 1    [SHARED] The answer is: False for Statement 1
+    Person 2: Every element in the group commutes, so (ab)^{-2} equals a^{-2}b^{-2} regardless of the order. The answer is: a^{-2}b^{-2}    [SHARED] The answer is: a^{-2}b^{-2}
+    Person 3: The order of multiplication in (ab)⁻² means we first compute ab and then raise to the power of -2, which is the same as multiplying a⁻² by b⁻². The answer is: a⁻²b⁻²    [SHARED] The answer is: a⁻²b⁻²
+
+  Round 2:
+    Person 1: Even though (ab)⁻² equals a⁻¹b⁻¹ squared, which is a⁻²b⁻², the expression b⁻²a⁻² is not guaranteed unless the group is abelian. The answer is: False for Statement 1    [SHARED] The answer is: False for Statement 1
+    Person 2: The inverse of a product in a group is the product of the inverses in reverse order, but since inverses also commute in groups, the order doesn't matter. Therefore, (ab)^{-2} equals b^{-2}a^{-2}. The proposed alternative, a^{-2}b^{-2}, is just a different notation and is equally valid. The answer is: a^{-2}b^{-2}    [SHARED] The answer is: a^{-2}b^{-2}
+    Person 3: Statement 1 claims (ab)⁻² equals b⁻²a⁻², but in groups multiplication is commutative so (ab)⁻² equals a⁻²b⁻². The answer is: a⁻²b⁻² (which is correct for Statement 2, but false for Statement 1 as written).    [SHARED] The answer is: a⁻²b⁻² (which is correct for Statement 2, but false for Statement 1 as written).
+
+  Round 3:
+    Person 1: Statement 1 claims (ab)⁻² = b⁻²a⁻², but in a non-abelian group, the order matters so this is not always true. The answer is: False for Statement 1    [SHARED] The answer is: False for Statement 1
+    Person 2: The expression (ab)^{-2} means first invert ab, then square the result. Inverses in groups do not commute with the exponents, so (ab)^{-2} is not the same as b^{-2}a^{-2}. The order of multiplication is irrelevant when raising to a power, so (ab)^{-2} equals a^{-2}b^{-2}. The answer is: a^{-2}b^{-2}    [SHARED] The answer is: a^{-2}b^{-2}
+    Person 3: Statement 1 is false because (ab)⁻² = a⁻²b⁻², not b⁻²a⁻² unless a and b commute. The answer is: False for Statement 1 and a⁻²b⁻² for Statement 2.    [SHARED] The answer is: False for Statement 1 and a⁻²b⁻² for Statement 2.
+
+Final answers:
+  Person 1 answered: False
+    Reasoning: Since (ab)⁻² equals a⁻²b⁻² in a group, the given form in Statement 1 is incorrect unless the group is abelian
+  Person 2 answered: a^{-2}b^{-2}
+    Reasoning: Applying the inverse to a product gives each factor its own inverse, and exponents distribute over inverses. The negative two exponent applies to both a and b in the same order as the original
+  Person 3 answered: a⁻²b⁻²
+    Reasoning: Group exponents apply to the entire product first
+
+====================================================================================================
