@@ -36,7 +36,7 @@ CONFIG = {
     "transcripts_dir": "transcripts",
     "share_mode": "both", # "both", "reasoning", or "answer"
     "kept_reasoning_percentage": 0.5, # 0.0 to 1.0 (e.g., 0.4 means keeping the first 40% of the reasoning)
-    "kept_reasoning_percentage_agents": [0], # List of agent indices (0-indexed) to apply the truncation to
+    "kept_reasoning_percentage_agents": [], # List of agent indices (0-indexed) to apply the truncation to
 }
 
 def _get_dataset_info():
