@@ -1516,6 +1516,8 @@ transcript_data = {
     'tasksource/bigbench: Mal Agent 2 - both': 'transcripts/MAS/malicious/bigbench/olmo7bThink_job7176_2026-04-27_14h41m04s',
     'tasksource/bigbench: Mal Agent 3 - both': 'transcripts/MAS/malicious/bigbench/olmo7bThink_job7180_2026-04-27_18h24m20s',
     'tasksource/bigbench: Mal Agent 1 & 2 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/olmo7bThink_job5362_2026-04-13_16h25m34s',
+    'tasksource/bigbench: Mal Agent 1 & 3 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/olmo7bThink_job3990_2026-05-01_18h04m53s',
+    #'tasksource/bigbench: Mal Agent 2 & 3 - both': '
 }
 result = malicious_comparison(transcript_data, round_figure=False, comparison_name='Olmo Think, BigBench, MAS, both')
 all_results.append(result)
@@ -1583,7 +1585,7 @@ all_results.append(result)
 
 # --- Malicious prompt comparison for Olmo Think ---
 transcript_data = {
-    # 'openai/gsm8k: No Mal Agent - both': 'transcripts/MAS/both/...',
+    'openai/gsm8k: No Mal Agent - both': 'transcripts/MAS/both/olmo7bThink_job3961_2026-04-25_15h14m16s',
     'openai/gsm8k: Mal Agent 1 - both': 'transcripts/MAS/malicious/gsm8k/olmo7bThink_job5354_2026-04-13_15h40m36s',
     # 'openai/gsm8k: Mal Agent 2 - both': 'transcripts/MAS/malicious/gsm8k/...',
     # 'openai/gsm8k: Mal Agent 3 - both': 'transcripts/MAS/malicious/gsm8k/...',
@@ -1657,7 +1659,7 @@ all_results.append(result)
 
 # --- Malicious prompt comparison for Olmo Think ---
 transcript_data = {
-    # 'cais/mmlu: No Mal Agent - both': 'transcripts/MAS/both/...',
+    'cais/mmlu: No Mal Agent - both': 'transcripts/MAS/both/olmo7bThink_job3963_2026-04-25_15h15m10s',
     'cais/mmlu: Mal Agent 1 - both': 'transcripts/MAS/malicious/mmlu/olmo7bThink_job5355_2026-04-13_15h40m11s',
     # 'cais/mmlu: Mal Agent 2 - both': 'transcripts/MAS/malicious/mmlu/...',
     # 'cais/mmlu: Mal Agent 3 - both': 'transcripts/MAS/malicious/mmlu/...',
@@ -1732,8 +1734,8 @@ all_results.append(result)
 transcript_data = {
     'ChilleD/StrategyQA: No Mal Agent - both': 'transcripts/MAS/both/olmo7bThink_job3965_2026-04-25_15h20m06s',
     'ChilleD/StrategyQA: Mal Agent 1 - both': 'transcripts/MAS/malicious/strategyQA/olmo7bThink_job5356_2026-04-13_15h40m32s',
-    # 'ChilleD/StrategyQA: Mal Agent 2 - both': 'transcripts/MAS/malicious/strategyQA/...',
-    # 'ChilleD/StrategyQA: Mal Agent 3 - both': 'transcripts/MAS/malicious/strategyQA/...',
+    'ChilleD/StrategyQA: Mal Agent 2 - both': 'transcripts/MAS/malicious/strategyQA/olmo7bThink_job7175_2026-04-27_14h41m04s',
+    'ChilleD/StrategyQA: Mal Agent 3 - both': 'transcripts/MAS/malicious/strategyQA/olmo7bThink_job7179_2026-04-27_16h15m33s',
     'ChilleD/StrategyQA: Mal Agent 1 & 2 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/strategyQA/olmo7bThink_job5361_2026-04-13_16h18m06s',
 }
 result = malicious_comparison(transcript_data, round_figure=False, comparison_name='Olmo Think, StrategyQA, MAS, both')
