@@ -1517,7 +1517,7 @@ transcript_data = {
     'tasksource/bigbench: Mal Agent 3 - both': 'transcripts/MAS/malicious/bigbench/olmo7bThink_job7180_2026-04-27_18h24m20s',
     'tasksource/bigbench: Mal Agent 1 & 2 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/bigbench/olmo7bThink_job5362_2026-04-13_16h25m34s',
     'tasksource/bigbench: Mal Agent 1 & 3 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents1_3/olmo7bThink_job3990_2026-05-01_18h04m53s',
-    #'tasksource/bigbench: Mal Agent 2 & 3 - both': '
+    'tasksource/bigbench: Mal Agent 2 & 3 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents2_3/bigbench/olmo7bThink_job5451_2026-05-03_16h38m13s',
 }
 result = malicious_comparison(transcript_data, round_figure=False, comparison_name='Olmo Think, BigBench, MAS, both')
 all_results.append(result)
