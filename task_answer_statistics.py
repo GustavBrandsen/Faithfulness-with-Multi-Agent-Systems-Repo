@@ -232,7 +232,7 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filena
     if comparison_type == 'malicious' or comparison_type == 'early_stopping':
         categories = ['Wrong→Correct', 'Wrong→Different Wrong', 'Wrong→Same Wrong', 'Correct→Wrong', 'Correct→Correct', 'Wrong→Malicious Wrong', 'Correct→Malicious Wrong']
     elif comparison_type == 'sharemode_malicious' or comparison_type == 'malicious_convergence':
-        categories = ['Wrong→Correct', 'Wrong→Wrong', 'Correct→Wrong', 'Correct→Correct', 'Converges to Malicious Wrong']
+        categories = ['Wrong→Correct', 'Wrong→Wrong', 'Correct→Wrong', 'Correct→Correct', 'Malicious Wrong Convergence']
 
         datasets_data = {
             name: stats
@@ -300,7 +300,7 @@ def plot_pattern_statistics_comparison(datasets_data, model_name, dataset_filena
                 stats['correct_correct'],
                 stats['wrong_malicious_wrong'] + stats['correct_malicious_wrong']
             ]
-            print(f"Converges to Malicious Wrong: {stats['wrong_malicious_wrong'] + stats['correct_malicious_wrong']}")
+            print(f"Malicious Wrong Convergence: {stats['wrong_malicious_wrong'] + stats['correct_malicious_wrong']}")
 
     
             percentages = [(count / (stats['num_tasks'] * num_honest_agents)) * 100 for count in counts]
@@ -441,7 +441,7 @@ def plot_horizontal_pattern_statistics_comparison(
             'Wrong→Wrong',
             'Correct→Wrong',
             'Correct→Correct',
-            'Converges to Malicious Wrong'
+            'Malicious Wrong Convergence'
         ]
         datasets_data = {
             name: payload
@@ -1586,9 +1586,9 @@ all_results.append(result)
 # --- Malicious prompt comparison for Olmo Think ---
 transcript_data = {
     'openai/gsm8k: No Mal Agent - both': 'transcripts/MAS/both/olmo7bThink_job3961_2026-04-25_15h14m16s',
-    'openai/gsm8k: Mal Agent 1 - both': 'transcripts/MAS/malicious/gsm8k/olmo7bThink_job5354_2026-04-13_15h40m36s',
-    # 'openai/gsm8k: Mal Agent 2 - both': 'transcripts/MAS/malicious/gsm8k/...',
-    # 'openai/gsm8k: Mal Agent 3 - both': 'transcripts/MAS/malicious/gsm8k/...',
+    'openai/gsm8k: Mal Agent 1 - both': 'transcripts/MAS/malicious/gsm8k/olmo7bThink_job5354_2026-04-13_15h40m36s', 
+    'openai/gsm8k: Mal Agent 2 - both': 'transcripts/MAS/malicious/gsm8k/olmo7bThink_job7173_2026-04-27_14h21m36s',
+    'openai/gsm8k: Mal Agent 3 - both': 'transcripts/MAS/malicious/gsm8k/olmo7bThink_job7177_2026-04-27_14h54m01s',
     'openai/gsm8k: Mal Agent 1 & 2 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/gsm8k/olmo7bThink_job5359_2026-04-13_15h41m03s',
 
 }
@@ -1661,8 +1661,8 @@ all_results.append(result)
 transcript_data = {
     'cais/mmlu: No Mal Agent - both': 'transcripts/MAS/both/olmo7bThink_job3963_2026-04-25_15h15m10s',
     'cais/mmlu: Mal Agent 1 - both': 'transcripts/MAS/malicious/mmlu/olmo7bThink_job5355_2026-04-13_15h40m11s',
-    # 'cais/mmlu: Mal Agent 2 - both': 'transcripts/MAS/malicious/mmlu/...',
-    # 'cais/mmlu: Mal Agent 3 - both': 'transcripts/MAS/malicious/mmlu/...',
+    'cais/mmlu: Mal Agent 2 - both': 'transcripts/MAS/malicious/mmlu/olmo7bThink_job7174_2026-04-27_14h22m26s',
+    'cais/mmlu: Mal Agent 3 - both': 'transcripts/MAS/malicious/mmlu/olmo7bThink_job7178_2026-04-27_16h14m44s',
     'cais/mmlu: Mal Agent 1 & 2 - both': 'transcripts/MAS/malicious/2maliciousAgents/agents1_2/mmlu/olmo7bThink_job5360_2026-04-13_16h01m29s',
 }
 result = malicious_comparison(transcript_data, round_figure=False, comparison_name='Olmo Think, MMLU, MAS, both')
