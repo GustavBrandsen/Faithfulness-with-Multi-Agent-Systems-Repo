@@ -1,0 +1,62 @@
+Task ID: 85
+Task Name: MMLU_test_85
+
+Question:
+Let A and B be sets, f: A -> B and g: B -> A be functions such that for all a \in A, g(f(a)) = a. Statement 1 | The function g must necessarily be injective. Statement 2 | The function g must necessarily be surjective.
+
+Correct Answer: False, True
+
+====================================================================================================
+
+SIMULATION RUN
+----------------------------------------------------------------------------------------------------
+Initial answers:
+  Person 1 answered: injective
+    Reasoning: If g(f(a)) = a for all a in A, then g must map each f(a) to a unique a, so g is injective
+  Person 2 answered: injective
+    Reasoning: If g(f(a)) = a for all a in A, then g must map each f(a) to a unique a, so g is injective
+  Person 3 answered: injective
+    Reasoning: If g(f(a)) = a for all a in A, then g must map each f(a) to a unique a, so g is injective
+
+  Round 1:
+    Person 1: If g(f(a)) = a for every a in A, then different a's would force g(f(a)) to be different, so g cannot map two different inputs to the same output. The answer is: Statement 1 is true.    [SHARED] If g(f(a)) = a for every a in A, then different a's would force g(f(a)) to be different, so g cannot map two different inputs to the same output.
+
+The answer is: Statement 1 is true.
+    Person 2: The condition g(f(a)) = a for all a in A means that g undoes f, so if g(f(a1)) = g(f(a2)), then a1 = a2. Thus g is injective. The answer is: Statement 1 is true.    [SHARED] The condition g(f(a)) = a for all a in A means that g undoes f
+
+The answer is: Statement 1 is true.
+    Person 3: The condition g(f(a)) = a for all a in A means g must assign each element of the form f(a) to a uniquely. If g(f(a1)) = g(f(a2)) with a1 ≠ a2, then a1 = a2 by the given condition, so g is injective. The answer is: Statement 1 is true.    [SHARED] The condition g(f(a)) = a for all a in A means g must assign each element of the form f(a) to a uni
+
+The answer is: Statement 1 is true.
+
+  Round 2:
+    Person 1: The condition g(f(a)) = a for all a in A implies that g(f(a)) produces every element of A exactly once when a runs through A. Therefore, g must be injective because if g(f(a1)) = g(f(a2)), then a1 = a2. The answer is: Statement 1 is true.    [SHARED] The condition g(f(a)) = a for all a in A implies that g(f(a)) produces every element of A exactly once when a runs through A. Therefore, g must be injective because if g(f(a1)) = g(f(a2)), then a1 = a2.
+
+The answer is: Statement 1 is true.
+    Person 2: The fact that g(f(a)) = a for all a in A means f(a) is sent to a unique a by g. If g were not injective, two different a's would map to the same b, but g(b) could not equal both a's. Thus, g must be injective. The answer is: Statement 1 is true.    [SHARED] The fact that g(f(a)) = a for all a in A means f(a) is sent to a unique a by g. If g were not injective,
+
+The answer is: Statement 1 is true.
+    Person 3: The requirement g(f(a)) = a for all a in A prevents g from mapping two different f(a) values to the same a. Otherwise, a would have two distinct preimages under f, but g(f(a)) must equal both a's, forcing those a's to be the same. The answer is: Statement 1 is true.    [SHARED] The requirement g(f(a)) = a for all a in A prevents g from mapping two different f(a) values to the same a. Otherwi
+
+The answer is: Statement 1 is true.
+
+  Round 3:
+    Person 1: The equation g(f(a)) = a for all a in A ensures that g(f(a)) never repeats a value in A. If g were not injective, two distinct elements in the domain of g would map to the same b, but those two elements must come from f(a) for some a, contradicting the uniqueness of a. The answer is: Statement 1 is true.    [SHARED] The equation g(f(a)) = a for all a in A ensures that g(f(a)) never repeats a value in A. If g were not injective, two distinct elements in the domain of g would map to the same b, but those two elements must come from f(a) for some a, contradicting the uniqueness of a.
+
+The answer is: Statement 1 is true.
+    Person 2: Since g(f(a)) = a for every a, each f(a) is sent to a distinct a. If g were not injective, two different inputs would map to the same output, but f(a) can only produce each a once. Therefore, g must be injective. The answer is: Statement 1 is true.    [SHARED] Since g(f(a)) = a for every a, each f(a) is sent to a distinct a. If g were not injective, two different i
+
+The answer is: Statement 1 is true.
+    Person 3: If g(f(a)) = a for all a, then g cannot map two different f(a) to the same a, so g must be injective. The answer is: Statement 1 is true.    [SHARED] If g(f(a)) = a for all a, then g cannot map two di
+
+The answer is: Statement 1 is true.
+
+Final answers:
+  Person 1 answered: injective
+    Reasoning: For each a, f(a) is sent to a via g, so g(f(a)) gives a uniquely
+  Person 2 answered: Statement 1 is true.
+    Reasoning: g(f(a)) = a for all a means f(a) is unique preimage for each a. The only way this holds is if g is injective
+  Person 3 answered: Statement 1 is true.
+    Reasoning: The requirement g(f(a)) = a for all a in A means every element of A is the image of f(a) under g
+
+====================================================================================================
