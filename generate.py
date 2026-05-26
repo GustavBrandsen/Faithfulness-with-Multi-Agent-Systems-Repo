@@ -535,6 +535,8 @@ def main():
         # Override the global _TRANSCRIPT_SESSION_STAMP to match the folder name
         global _TRANSCRIPT_SESSION_STAMP
         _TRANSCRIPT_SESSION_STAMP = args[folder_idx + 1]
+        print(f"Using folder name as session stamp: {_TRANSCRIPT_SESSION_STAMP}")
+        print(f"Number of arguments: {len(args)}")
 
     start_time = time.time()
     print("Starting Multi-Agent Evaluation")
