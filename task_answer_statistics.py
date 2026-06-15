@@ -3133,6 +3133,52 @@ all_results = []
 # all_results.append(result)
 
 
+# --- CR-IA comparison for Olmo Think ---
+transcript_data = {
+    'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
+    'openai/gsm8k: Mal Agent 1': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/gsm8k/agent0/olmo7bThink_job7907_2026-06-06_15h01m45s',
+    'openai/gsm8k: Mal Agent 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/gsm8k/agent1/olmo7bThink_job9142_2026-06-09_10h21m54s',
+    'openai/gsm8k: Mal Agent 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/gsm8k/agent2/olmo7bThink_job9146_2026-06-09_10h51m25s',
+}
+# result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, GSM8K, MAS, both')
+# all_results.append(result)
+result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, GSM8K, MAS, both')
+all_results.append(result)
+
+transcript_data = {
+    'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
+    'cais/mmlu: Mal Agent 1': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/mmlu/agent0/olmo7bThink_job7908_2026-06-06_15h02m14s',
+    'cais/mmlu: Mal Agent 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/mmlu/agent1/olmo7bThink_job9143_2026-06-09_10h22m25s',
+    'cais/mmlu: Mal Agent 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/mmlu/agent2/olmo7bThink_job93_2026-06-10_17h19m03s',
+}
+# result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, MMLU, MAS, both')
+# all_results.append(result)
+result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, MMLU, MAS, both')
+all_results.append(result)
+
+transcript_data = {
+    'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h26m25s',
+    'ChilleD/StrategyQA: Mal Agent 1': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/strategyQA/agent0/olmo7bThink_job7909_2026-06-06_15h02m14s',
+    'ChilleD/StrategyQA: Mal Agent 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/strategyQA/agent1/olmo7bThink_job9144_2026-06-09_10h22m25s',
+    'ChilleD/StrategyQA: Mal Agent 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/strategyQA/agent2/olmo7bThink_job94_2026-06-10_17h19m28s',
+}
+# result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, StrategyQA, MAS, both')
+# all_results.append(result)
+result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, StrategyQA, MAS, both')
+all_results.append(result)
+
+transcript_data = {
+    'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s',
+    'tasksource/bigbench: Mal Agent 1': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/bigbench/agent0/olmo7bThink_job7912_2026-06-06_15h04m13s',
+    'tasksource/bigbench: Mal Agent 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/bigbench/agent1/olmo7bThink_job9145_2026-06-09_10h22m25s',
+    'tasksource/bigbench: Mal Agent 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/1agent/bigbench/agent2/olmo7bThink_job95_2026-06-10_17h19m28s',
+}
+# result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, BigBench, MAS, both')
+# all_results.append(result)
+result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, BigBench, MAS, both')
+all_results.append(result)
+
+
 # # ╔═════════════════════════════════════════════════╗
 # # ║           CR-IA TWO AGENT COMPARISON            ║
 # # ╚═════════════════════════════════════════════════╝
@@ -3273,6 +3319,52 @@ all_results = []
 # # all_results.append(result)
 # # result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Llama, BigBench, MAS, both')
 # # all_results.append(result)
+
+
+# --- CR-IA comparison for Olmo Think ---
+transcript_data = {
+    'openai/gsm8k: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h41m56s',
+    'openai/gsm8k: Mal Agent 1 & 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/gsm8k/agents0_1/olmo7bThink_job3511_2026-06-03_23h28m04s',
+    'openai/gsm8k: Mal Agent 1 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/gsm8k/agents0_2/olmo7bThink_job3515_2026-06-03_23h28m54s',
+    'openai/gsm8k: Mal Agent 2 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/gsm8k/agents1_2/olmo7bThink_job3540_2026-06-03_23h31m23s',
+}
+result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, GSM8K, MAS, both')
+# all_results.append(result)
+# result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, GSM8K, MAS, both')
+# all_results.append(result)
+
+transcript_data = {
+    'cais/mmlu: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h29m53s',
+    'cais/mmlu: Mal Agent 1 & 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/mmlu/agents0_1/olmo7bThink_job3512_2026-06-03_23h28m33s',
+    'cais/mmlu: Mal Agent 1 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/mmlu/agents0_2/olmo7bThink_job3516_2026-06-03_23h29m30s',
+    'cais/mmlu: Mal Agent 2 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/mmlu/agents1_2/olmo7bThink_job3541_2026-06-03_23h32m36s',
+}
+result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, MMLU, MAS, both')
+# all_results.append(result)
+# result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, MMLU, MAS, both')
+# all_results.append(result)
+
+transcript_data = {
+    'ChilleD/StrategyQA: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_15h26m25s',
+    'ChilleD/StrategyQA: Mal Agent 1 & 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/strategyQA/agents0_1/olmo7bThink_job3513_2026-06-03_23h28m54s',
+    'ChilleD/StrategyQA: Mal Agent 1 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/strategyQA/agents0_2/olmo7bThink_job3517_2026-06-03_23h29m30s',
+    'ChilleD/StrategyQA: Mal Agent 2 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/strategyQA/agents1_2/olmo7bThink_job4715_2026-06-04_17h28m09s',
+}
+result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, StrategyQA, MAS, both')
+# all_results.append(result)
+# result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, StrategyQA, MAS, both')
+# all_results.append(result)
+
+transcript_data = {
+    'tasksource/bigbench: No Mal Agent': 'transcripts/MAS/both/olmo7b_2026-03-29_01h47m46s',
+    'tasksource/bigbench: Mal Agent 1 & 2': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/bigbench/agents0_1/olmo7bThink_job3514_2026-06-03_23h28m54s',
+    'tasksource/bigbench: Mal Agent 1 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/bigbench/agents0_2/olmo7bThink_job3518_2026-06-03_23h29m30s',
+    'tasksource/bigbench: Mal Agent 2 & 3': 'transcripts/MAS/unfaithfulReasoning/correctReasoning_wrongAnswer/2agents/bigbench/agents1_2/olmo7bThink_job4716_2026-06-04_17h28m35s',
+}
+result = malicious_comparison(transcript_data, round_figure=False, comparison_type='CR-IA', return_data=True, comparison_name='Olmo Think, BigBench, MAS, both')
+# all_results.append(result)
+# result = malicious_comparison(transcript_data, round_figure=True, comparison_type='CR-IA',return_data=False, return_round_data=True, comparison_name='Olmo Think, BigBench, MAS, both')
+# all_results.append(result)
 
 
 # #export_comparisons_to_excel(all_results, 'CR_IA_results.xlsx')
